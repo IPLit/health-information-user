@@ -21,7 +21,7 @@ import static java.lang.String.format;
 public class GatewayAuthenticationClient {
     private final WebClient webclient;
     private final Logger logger = LogManager.getLogger(GatewayAuthenticationClient.class);
-
+    
     public GatewayAuthenticationClient(WebClient.Builder webClient, String baseUrl) {
         if (baseUrl.contains("nha-suma")) {
             baseUrl = "https://dev.abdm.gov.in/gateway/v0.5";
