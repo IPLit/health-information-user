@@ -73,7 +73,7 @@ jobs:
       - name: Helm - Checkout Charts Repository
         uses: actions/checkout@v2
         with:
-          repository: Bahmniindiadistro/helm-charts
+          repository: IPLit/helm-charts
           ref: gh-pages
           path: helm-charts
           persist-credentials: false
@@ -83,7 +83,7 @@ jobs:
 
       - name: Helm - reIndex
         working-directory: helm-charts/
-        run: helm repo index --merge index.yaml --url https://bahmniindiadistro.github.io/helm-charts/  .
+        run: helm repo index --merge index.yaml --url https://iplit.github.io/helm-charts/  .
 
       - name: Helm - Publish Chart
         working-directory: helm-charts/
@@ -92,6 +92,6 @@ jobs:
           git config user.email ${{ secrets.BAHMNI_EMAIL}}
           git add .
           git commit -m "Release of hiu-${{ env.ARTIFACT_VERSION }}"
-          git push 'https://${{ secrets.BAHMNI_USERNAME}}:${{ secrets.BAHMNI_PAT}}@github.com/bahmniindiadistro/helm-charts.git' gh-pages
+          git push 'https://${{ secrets.BAHMNI_USERNAME}}:${{ secrets.BAHMNI_PAT}}@github.com/iplit/helm-charts.git' gh-pages
 
 
