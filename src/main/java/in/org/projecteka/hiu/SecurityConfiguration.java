@@ -61,6 +61,8 @@ public class SecurityConfiguration {
     //   PATH_CONSENTS_HIU_NOTIFY,
     protected static final String[] GATEWAY_APIS = new String[]{
         PATH_CONSENTS_ON_FIND,
+        PATH_CONSENTS_ON_FETCH,
+        PATH_CONSENT_REQUEST_ON_STATUS,
         PATH_CONSENT_REQUESTS_ON_INIT
     };
 
@@ -72,9 +74,9 @@ public class SecurityConfiguration {
     private static final String[] ALLOWED_LISTS = new String[]{"/**.json",
       
             
-            PATH_CONSENTS_ON_FETCH,
+            
             PATH_HEALTH_INFORMATION_HIU_ON_REQUEST,
-            PATH_CONSENT_REQUEST_ON_STATUS,
+            
             PATH_CONSENTS_HIU_NOTIFY,
                                                                
             "/ValueSet",
