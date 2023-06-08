@@ -60,7 +60,8 @@ public class SecurityConfiguration {
 
     //   PATH_CONSENTS_HIU_NOTIFY,
     protected static final String[] GATEWAY_APIS = new String[]{
-        PATH_CONSENTS_ON_FIND
+        PATH_CONSENTS_ON_FIND,
+        PATH_CONSENT_REQUESTS_ON_INIT
     };
 
     private static final List<Map.Entry<HttpMethod, String>> CM_PATIENT_APIS = List.of(
@@ -70,7 +71,7 @@ public class SecurityConfiguration {
             Map.entry(HttpMethod.POST, API_PATH_GET_HEALTH_INFO_STATUS));
     private static final String[] ALLOWED_LISTS = new String[]{"/**.json",
       
-            PATH_CONSENT_REQUESTS_ON_INIT,
+            
             PATH_CONSENTS_ON_FETCH,
             PATH_HEALTH_INFORMATION_HIU_ON_REQUEST,
             PATH_CONSENT_REQUEST_ON_STATUS,
