@@ -19,6 +19,7 @@ import static in.org.projecteka.hiu.consent.model.ConsentStatus.GRANTED;
 import static reactor.core.publisher.Flux.fromIterable;
 import static reactor.core.publisher.Mono.defer;
 import static reactor.core.publisher.Mono.error;
+import static reactor.core.publisher.Mono.just;
 
 public class GrantedConsentTask extends ConsentTask {
     private static final Logger logger = LoggerFactory.getLogger(GrantedConsentTask.class);
