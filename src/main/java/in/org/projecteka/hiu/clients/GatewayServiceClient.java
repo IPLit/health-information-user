@@ -83,6 +83,7 @@ public class GatewayServiceClient {
     }
 
     public Mono<Void> requestConsentArtefact(ConsentArtefactRequest request, String cmSuffix) {
+        logger.info("requestConsentArtefact body consentId= " + request.getConsentId() + ",requestId= " + request.getRequestId());
         return gateway.token()
                 .flatMap(token -> webClient
                         .post()
