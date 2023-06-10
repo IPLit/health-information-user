@@ -93,7 +93,7 @@ public class GatewayServiceClient {
                         .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
                         .body(just(request), ConsentArtefactRequest.class)
                         .retrieve()
-                        .onStatus(not(HttpStatus::is2xxSuccessful), clientResponse -> error(creationFailed()))
+                        // .onStatus(not(HttpStatus::is2xxSuccessful), clientResponse -> error(creationFailed()))
                         .toBodilessEntity()
                         .timeout(ofMillis(gatewayProperties.getRequestTimeout())))
                 .then();
