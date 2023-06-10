@@ -61,10 +61,10 @@ public class GrantedConsentTask extends ConsentTask {
                 .flatMap(consentRequest -> consentRepository.updateConsentRequestStatus(GRANTED,
                         consentRequestId).thenReturn(consentRequest))
                 .map(consentRequest -> getCmSuffix(consentRequest.getPatient().getId()))
-                // .flatMapMany(cmSuffix -> fromIterable(consentNotification.getConsentArtefacts())
-                //      .flatMap(reference -> perform(reference, consentRequestId, cmSuffix)))
-                .flatMapMany(cmSuffix ->
-                        perform(consentNotification.getConsentArtefacts().get(1), consentRequestId, cmSuffix))
+                .flatMapMany(cmSuffix -> fromIterable(consentNotification.getConsentArtefacts())
+                      .flatMap(reference -> perform(reference, consentRequestId, cmSuffix)))
+                //.flatMapMany(cmSuffix ->
+                //        perform(consentNotification.getConsentArtefacts().get(1), consentRequestId, cmSuffix))
                 .ignoreElements();
     }
 }
