@@ -36,6 +36,7 @@ public class GrantedConsentTask extends ConsentTask {
 
     private Mono<Void> perform(ConsentArtefactReference reference, String consentRequestId, String cmSuffix) {
         var requestId = UUID.randomUUID();
+        logger.info("ConsentArtefactReference.reference: " + reference);
         return gatewayResponseCache.put(requestId.toString(), consentRequestId)
                 .then(defer(() -> {
                     var consentArtefactRequest = ConsentArtefactRequest
@@ -51,6 +52,7 @@ public class GrantedConsentTask extends ConsentTask {
     @Override
     public Mono<Void> perform(ConsentNotification consentNotification, LocalDateTime timeStamp, UUID requestID) {
         var consentRequestId = consentNotification.getConsentRequestId();
+        logger.info("consentNotification.getConsentArtefacts: " + consentNotification.getConsentArtefacts());
         return consentRepository.get(consentRequestId)
                 .switchIfEmpty(defer(() -> {
                     logger.error("Response came for unknown consent request {}", consentRequestId);
