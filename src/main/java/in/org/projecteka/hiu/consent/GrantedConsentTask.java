@@ -21,6 +21,9 @@ import static reactor.core.publisher.Mono.defer;
 import static reactor.core.publisher.Mono.error;
 import static reactor.core.publisher.Mono.just;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class GrantedConsentTask extends ConsentTask {
     private static final Logger logger = LoggerFactory.getLogger(GrantedConsentTask.class);
     private final GatewayServiceClient gatewayClient;
