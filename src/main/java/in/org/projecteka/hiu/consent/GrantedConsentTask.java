@@ -65,10 +65,10 @@ public class GrantedConsentTask extends ConsentTask {
                         consentRequestId).thenReturn(consentRequest))
                 .map(consentRequest -> getCmSuffix(consentRequest.getPatient().getId()))
                 .flatMapMany(cmSuffix -> {
-                    List<ConsentArtefactReference> collect = consentNotification.getConsentArtefacts().stream().sorted().collect(Collectors.toList());
-                    logger.info("collect: " + collect);
-                    logger.info("collect.get(0): " + collect.get(0));
-                    return perform(collect.get(0), consentRequestId, cmSuffix);
+                    // List<ConsentArtefactReference> collect = consentNotification.getConsentArtefacts().stream().sorted().collect(Collectors.toList());
+                    // logger.info("collect: " + collect);
+                    logger.info("consentNotification.getConsentArtefacts().get(0): " + consentNotification.getConsentArtefacts().get(0));
+                    return perform(consentNotification.getConsentArtefacts().get(0), consentRequestId, cmSuffix);
                 })
                 // .flatMapMany(cmSuffix -> fromIterable(consentNotification.getConsentArtefacts())
                 //      .flatMap(reference -> perform(reference, consentRequestId, cmSuffix)))
