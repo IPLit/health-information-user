@@ -35,7 +35,7 @@ public class DataFlowRequestPublisher {
                         .build())
                 .dateRange(
                         //DateRange.builder()
-                        dateRange.getFrom(), dateRange.getTo())
+                        new DateRange(dateRange.getFrom(), dateRange.getTo()))
                         //.build())
                 .dataPushUrl(dataPushUrl)
                 .build();
