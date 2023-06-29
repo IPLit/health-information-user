@@ -33,10 +33,10 @@ public class DataFlowRequestPublisher {
                         .id(consentArtefactId)
                         .digitalSignature(signature)
                         .build())
-                .dateRange(DateRange.builder()
-                        .from(dateRange.getFrom())
-                        .to(dateRange.getTo())
-                        .build())
+                .dateRange(
+                        //DateRange.builder()
+                        from(dateRange.getFrom()), to(dateRange.getTo()))
+                        //.build())
                 .dataPushUrl(dataPushUrl)
                 .build();
        TraceableMessage traceableMessage = TraceableMessage.builder()
