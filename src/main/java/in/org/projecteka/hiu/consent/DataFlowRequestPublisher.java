@@ -26,6 +26,8 @@ public class DataFlowRequestPublisher {
 
     @SneakyThrows
     public Mono<Void> broadcastDataFlowRequest(String consentArtefactId, in.org.projecteka.hiu.consent.model.DateRange dateRange, String signature, String dataPushUrl) {
+
+        logger.info("dateRange from: " + dateRange.getFrom() + ", dateRange to: " + dateRange.getTo());
         DestinationsConfig.DestinationInfo destinationInfo =
                 destinationsConfig.getQueues().get(queueNames.getDataFlowRequestQueue());
          DataFlowRequest request = DataFlowRequest.builder()
