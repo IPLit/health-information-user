@@ -26,8 +26,6 @@ public class DataFlowRequestPublisher {
 
     @SneakyThrows
     public Mono<Void> broadcastDataFlowRequest(String consentArtefactId, in.org.projecteka.hiu.consent.model.DateRange dateRange, String signature, String dataPushUrl) {
-
-        logger.info("dateRange from: " + dateRange.getFrom() + ", dateRange to: " + dateRange.getTo());
         DestinationsConfig.DestinationInfo destinationInfo =
                 destinationsConfig.getQueues().get(queueNames.getDataFlowRequestQueue());
          DataFlowRequest request = DataFlowRequest.builder()
@@ -35,10 +33,10 @@ public class DataFlowRequestPublisher {
                         .id(consentArtefactId)
                         .digitalSignature(signature)
                         .build())
-                .dateRange(
-                        //DateRange.builder()
-                        new DateRange(dateRange.getFrom(), dateRange.getTo()))
-                        //.build())
+                .dateRange(DateRange.builder()
+                        .from(dateRange.getFrom())
+                        .to(dateRange.getTo())
+                        .build())
                 .dataPushUrl(dataPushUrl)
                 .build();
        TraceableMessage traceableMessage = TraceableMessage.builder()

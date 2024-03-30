@@ -19,10 +19,6 @@ import static in.org.projecteka.hiu.consent.model.ConsentStatus.GRANTED;
 import static reactor.core.publisher.Flux.fromIterable;
 import static reactor.core.publisher.Mono.defer;
 import static reactor.core.publisher.Mono.error;
-import static reactor.core.publisher.Mono.just;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class GrantedConsentTask extends ConsentTask {
     private static final Logger logger = LoggerFactory.getLogger(GrantedConsentTask.class);
@@ -39,7 +35,6 @@ public class GrantedConsentTask extends ConsentTask {
 
     private Mono<Void> perform(ConsentArtefactReference reference, String consentRequestId, String cmSuffix) {
         var requestId = UUID.randomUUID();
-        logger.info("ConsentArtefactReference.reference: " + reference);
         return gatewayResponseCache.put(requestId.toString(), consentRequestId)
                 .then(defer(() -> {
                     var consentArtefactRequest = ConsentArtefactRequest
@@ -55,7 +50,6 @@ public class GrantedConsentTask extends ConsentTask {
     @Override
     public Mono<Void> perform(ConsentNotification consentNotification, LocalDateTime timeStamp, UUID requestID) {
         var consentRequestId = consentNotification.getConsentRequestId();
-        logger.info("consentNotification.getConsentArtefacts: " + consentNotification.getConsentArtefacts());
         return consentRepository.get(consentRequestId)
                 .switchIfEmpty(defer(() -> {
                     logger.error("Response came for unknown consent request {}", consentRequestId);
@@ -64,16 +58,8 @@ public class GrantedConsentTask extends ConsentTask {
                 .flatMap(consentRequest -> consentRepository.updateConsentRequestStatus(GRANTED,
                         consentRequestId).thenReturn(consentRequest))
                 .map(consentRequest -> getCmSuffix(consentRequest.getPatient().getId()))
-                // .flatMapMany(cmSuffix -> {
-                    // List<ConsentArtefactReference> collect = consentNotification.getConsentArtefacts().stream().sorted().collect(Collectors.toList());
-                    // logger.info("collect: " + collect);
-                    // logger.info("consentNotification.getConsentArtefacts().get(0): " + consentNotification.getConsentArtefacts().get(0));
-                    // return perform(consentNotification.getConsentArtefacts().get(0), consentRequestId, cmSuffix);
-                // })
                 .flatMapMany(cmSuffix -> fromIterable(consentNotification.getConsentArtefacts())
-                     .flatMap(reference -> perform(reference, consentRequestId, cmSuffix)))
-                // .flatMapMany(cmSuffix ->
-                //        perform(consentNotification.getConsentArtefacts().get(1), consentRequestId, cmSuffix))
+                        .flatMap(reference -> perform(reference, consentRequestId, cmSuffix)))
                 .ignoreElements();
     }
 }
