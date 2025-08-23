@@ -29,9 +29,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
-import static in.org.projecteka.hiu.common.Constants.PATH_HEARTBEAT;
+// import static in.org.projecteka.hiu.common.Constants.PATH_HEARTBEAT;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -79,13 +78,13 @@ class HeartbeatControllerTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
     void shouldGiveHIUStatusAsUp() throws JsonProcessingException {
         var heartbeatResponse = HeartbeatResponse.builder()
-                .timeStamp(LocalDateTime.now(ZoneOffset.UTC))
+                .timeStamp(LocalDateTime.now())
                 .status(Status.UP)
                 .build();
         var heartbeatResponseJson = TestBuilders.OBJECT_MAPPER.writeValueAsString(heartbeatResponse);
@@ -104,7 +103,7 @@ class HeartbeatControllerTest {
     @Test
     void shouldGiveHIUStatusAsDown() throws JsonProcessingException {
         var heartbeatResponse = HeartbeatResponse.builder()
-                .timeStamp(LocalDateTime.now(ZoneOffset.UTC))
+                .timeStamp(LocalDateTime.now())
                 .status(Status.DOWN)
                 .error(new Error(ErrorCode.SERVICE_DOWN,"Service Down"))
                 .build();
@@ -124,7 +123,7 @@ class HeartbeatControllerTest {
     @Test
     void shouldGiveCMStatusAsUpForLiveliness() throws JsonProcessingException {
         webTestClient.get()
-                .uri(PATH_HEARTBEAT)
+                .uri(Constants.PATH_HEARTBEAT)
                 .exchange()
                 .expectStatus()
                 .isOk();

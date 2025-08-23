@@ -41,7 +41,6 @@ import static in.org.projecteka.hiu.consent.model.ConsentStatus.EXPIRED;
 import static in.org.projecteka.hiu.consent.model.ConsentStatus.GRANTED;
 import static in.org.projecteka.hiu.consent.model.ConsentStatus.REVOKED;
 import static java.time.LocalDateTime.now;
-import static java.time.ZoneOffset.UTC;
 import static java.util.UUID.fromString;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static reactor.core.publisher.Flux.fromIterable;
@@ -146,7 +145,7 @@ public class ConsentService {
                         return updatePublisher
                                 .then(patientConsentRepository.updatePatientConsentRequest(dataRequestId,
                                         consentRequestId,
-                                        now(UTC)));
+                                        now()));
                     })
                     .onErrorResume(NoSuchFieldError.class, e -> updatePublisher);
         }

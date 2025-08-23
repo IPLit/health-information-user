@@ -1,17 +1,17 @@
 package in.org.projecteka.hiu.common;
 
 import java.time.LocalDateTime;
+import java.lang.IllegalArgumentException;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 import static in.org.projecteka.hiu.common.Constants.TIMESTAMP_PATTERN;
 import static java.time.LocalDateTime.now;
-import static java.time.ZoneOffset.UTC;
 
 public class Utils {
 
     public static String getISOTimestamp(){
-        return now(UTC).format(DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN));
+        return now().format(DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN));
     }
 
     public static LocalDateTime parseTimeStamp(String timestamp) {

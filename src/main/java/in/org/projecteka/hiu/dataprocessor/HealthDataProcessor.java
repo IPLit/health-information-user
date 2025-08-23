@@ -41,13 +41,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -207,7 +205,7 @@ public class HealthDataProcessor {
                 .notification(Notification.builder()
                         .consentId(context.getConsentId())
                         .transactionId(context.getTransactionId())
-                        .doneAt(LocalDateTime.now(ZoneOffset.UTC))
+                        .doneAt(LocalDateTime.now())
                         .notifier(Notifier.builder()
                                 .type(Type.HIU)
                                 .id(hiuProperties.getId())

@@ -35,7 +35,6 @@ import static in.org.projecteka.hiu.consent.TestBuilders.gatewayConsentArtefactR
 import static in.org.projecteka.hiu.consent.TestBuilders.hiuProperties;
 import static in.org.projecteka.hiu.consent.TestBuilders.permission;
 import static in.org.projecteka.hiu.consent.model.ConsentStatus.GRANTED;
-import static java.time.ZoneOffset.UTC;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -181,7 +180,7 @@ class PatientConsentServiceTest {
 
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .hipId(hipId)
-                .patientDataRequestedAt(LocalDateTime.now(UTC))
+                .patientDataRequestedAt(LocalDateTime.now())
                 .dataRequestId(UUID.randomUUID().toString())
                 .build();
 
@@ -219,7 +218,7 @@ class PatientConsentServiceTest {
 
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .hipId(hipId)
-                .patientDataRequestedAt(LocalDateTime.now(UTC))
+                .patientDataRequestedAt(LocalDateTime.now())
                 .dataRequestId(UUID.randomUUID().toString())
                 .build();
 

@@ -37,7 +37,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -283,7 +282,7 @@ class HealthInfoControllerTest {
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .consentRequestId(null)
-                .patientDataRequestedAt(LocalDateTime.now(ZoneOffset.UTC))
+                .patientDataRequestedAt(LocalDateTime.now())
                 .patientId(requester)
                 .build();
 
@@ -312,7 +311,7 @@ class HealthInfoControllerTest {
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .consentArtefactId(null)
                 .patientId(requester)
-                .patientDataRequestedAt(LocalDateTime.now(ZoneOffset.UTC).minusMinutes(1))
+                .patientDataRequestedAt(LocalDateTime.now().minusMinutes(1))
                 .build();
 
         when(authenticator.verify(token)).thenReturn(just(caller));
@@ -339,7 +338,7 @@ class HealthInfoControllerTest {
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .dataPartStatus(null)
-                .dataFlowRequestedAt(LocalDateTime.now(ZoneOffset.UTC))
+                .dataFlowRequestedAt(LocalDateTime.now())
                 .patientId(requester)
                 .build();
 
@@ -368,7 +367,7 @@ class HealthInfoControllerTest {
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .dataPartStatus(null)
                 .patientId(requester)
-                .dataFlowRequestedAt(LocalDateTime.now(ZoneOffset.UTC).minusMinutes(5))
+                .dataFlowRequestedAt(LocalDateTime.now().minusMinutes(5))
                 .build();
 
         when(authenticator.verify(token)).thenReturn(just(caller));
@@ -395,7 +394,7 @@ class HealthInfoControllerTest {
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .consentArtefactId(null)
-                .patientDataRequestedAt(LocalDateTime.now(ZoneOffset.UTC).minusMinutes(5))
+                .patientDataRequestedAt(LocalDateTime.now().minusMinutes(5))
                 .patientId(requester)
                 .build();
 
@@ -423,7 +422,7 @@ class HealthInfoControllerTest {
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .consentRequestId(null)
-                .patientDataRequestedAt(LocalDateTime.now(ZoneOffset.UTC).minusMinutes(5))
+                .patientDataRequestedAt(LocalDateTime.now().minusMinutes(5))
                 .patientId(requester)
                 .build();
 
@@ -451,7 +450,7 @@ class HealthInfoControllerTest {
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .consentRequestId(null)
-                .patientDataRequestedAt(LocalDateTime.now(ZoneOffset.UTC).minusMinutes(5))
+                .patientDataRequestedAt(LocalDateTime.now().minusMinutes(5))
                 .patientId("some-other-request@ncg")
                 .build();
 

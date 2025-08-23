@@ -164,7 +164,7 @@ class ConsentUserJourneyTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     static class ContextInitializer

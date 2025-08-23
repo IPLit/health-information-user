@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
@@ -98,7 +97,7 @@ public class PatientService {
         var requestId = UUID.randomUUID();
         var patientOnNotifyRequest = PatientStatusNotification
                 .builder()
-                .timestamp(LocalDateTime.now(ZoneOffset.UTC))
+                .timestamp(LocalDateTime.now())
                 .requestId(requestId);
         GatewayResponse gatewayResponse = new GatewayResponse(requestID.toString());
         patientOnNotifyRequest.resp(gatewayResponse).build();
