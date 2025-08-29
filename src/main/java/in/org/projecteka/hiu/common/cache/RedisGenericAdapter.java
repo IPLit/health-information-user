@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.ReactiveRedisOperations;
 import org.springframework.util.StringUtils;
+
+import in.org.projecteka.hiu.common.Utils;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
@@ -50,7 +52,7 @@ public class RedisGenericAdapter<T> implements CacheAdapter<String, T> {
                 .doOnError(error -> logger.error(error.getMessage(), error))
                 .retryWhen(Retry
                         .backoff(retry, Duration.ofMillis(100)).jitter(0d)
-                        .doAfterRetry(rs -> logger.error(RETRIED_AT, now()))
+                        .doAfterRetry(rs -> logger.error(RETRIED_AT, now(Utils.zOffset)))
                         .onRetryExhaustedThrow((spec, rs) -> rs.failure()));
     }
 

@@ -1,6 +1,7 @@
 package in.org.projecteka.hiu.consent;
 
 
+import in.org.projecteka.hiu.common.Utils;
 import in.org.projecteka.hiu.dataflow.model.PatientDataRequestDetail;
 import in.org.projecteka.hiu.dataflow.model.PatientDataRequestMapping;
 import io.vertx.pgclient.PgPool;
@@ -13,6 +14,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -103,7 +105,7 @@ public class PatientConsentRepository {
 
     public Mono<Void> updatePatientConsentRequest(UUID dataRequestId, UUID consentRequestId, LocalDateTime now) {
         return Mono.create(monoSink -> readWriteClient.preparedQuery(UPDATE_PATIENT_CONSENT_REQUEST)
-                .execute(Tuple.of(dataRequestId, consentRequestId, now),
+                .execute(Tuple.of(dataRequestId, consentRequestId, ZonedDateTime.now(Utils.zOffset).toLocalDateTime()),
                         handler -> {
                             if (handler.failed()) {
                                 logger.error(handler.cause().getMessage(), handler.cause());

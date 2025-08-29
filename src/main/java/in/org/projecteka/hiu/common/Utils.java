@@ -1,6 +1,8 @@
 package in.org.projecteka.hiu.common;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.lang.IllegalArgumentException;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -10,8 +12,10 @@ import static java.time.LocalDateTime.now;
 
 public class Utils {
 
+    public static ZoneId zOffset = ZoneId.of("Asia/Kolkata");
+
     public static String getISOTimestamp(){
-        return now().format(DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN));
+        return now(ZoneOffset.UTC).format(DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN));
     }
 
     public static LocalDateTime parseTimeStamp(String timestamp) {

@@ -1,6 +1,7 @@
 package in.org.projecteka.hiu.common.heartbeat;
 
 import in.org.projecteka.hiu.common.Constants;
+import in.org.projecteka.hiu.common.Utils;
 import in.org.projecteka.hiu.common.heartbeat.model.HeartbeatResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,7 @@ public class HeartbeatController {
     public Mono<ResponseEntity<HeartbeatResponse>> getLiveliness() {
         HeartbeatResponse heartbeatResponse = HeartbeatResponse.builder()
                 .status(UP)
-                .timeStamp(now())
+                .timeStamp(now(Utils.zOffset))
                 .build();
         return Mono.just(new ResponseEntity<>(heartbeatResponse, OK));
     }

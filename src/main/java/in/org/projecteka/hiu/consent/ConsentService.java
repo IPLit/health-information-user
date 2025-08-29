@@ -5,6 +5,7 @@ import in.org.projecteka.hiu.Error;
 import in.org.projecteka.hiu.ErrorRepresentation;
 import in.org.projecteka.hiu.HiuProperties;
 import in.org.projecteka.hiu.clients.GatewayServiceClient;
+import in.org.projecteka.hiu.common.Utils;
 import in.org.projecteka.hiu.common.cache.CacheAdapter;
 import in.org.projecteka.hiu.consent.model.ConsentNotification;
 import in.org.projecteka.hiu.consent.model.ConsentRequestData;
@@ -24,6 +25,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +42,6 @@ import static in.org.projecteka.hiu.consent.model.ConsentStatus.ERRORED;
 import static in.org.projecteka.hiu.consent.model.ConsentStatus.EXPIRED;
 import static in.org.projecteka.hiu.consent.model.ConsentStatus.GRANTED;
 import static in.org.projecteka.hiu.consent.model.ConsentStatus.REVOKED;
-import static java.time.LocalDateTime.now;
 import static java.util.UUID.fromString;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static reactor.core.publisher.Flux.fromIterable;
@@ -145,7 +146,7 @@ public class ConsentService {
                         return updatePublisher
                                 .then(patientConsentRepository.updatePatientConsentRequest(dataRequestId,
                                         consentRequestId,
-                                        now()));
+                                        ZonedDateTime.now(Utils.zOffset).toLocalDateTime()));
                     })
                     .onErrorResume(NoSuchFieldError.class, e -> updatePublisher);
         }

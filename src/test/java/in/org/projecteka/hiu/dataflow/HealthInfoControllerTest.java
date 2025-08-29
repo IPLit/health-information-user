@@ -282,7 +282,7 @@ class HealthInfoControllerTest {
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .consentRequestId(null)
-                .patientDataRequestedAt(LocalDateTime.now())
+                .patientDataRequestedAt(LocalDateTime.now(in.org.projecteka.hiu.common.Utils.zOffset))
                 .patientId(requester)
                 .build();
 
@@ -311,7 +311,7 @@ class HealthInfoControllerTest {
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .consentArtefactId(null)
                 .patientId(requester)
-                .patientDataRequestedAt(LocalDateTime.now().minusMinutes(1))
+                .patientDataRequestedAt(LocalDateTime.now(in.org.projecteka.hiu.common.Utils.zOffset).minusMinutes(1))
                 .build();
 
         when(authenticator.verify(token)).thenReturn(just(caller));
@@ -338,7 +338,7 @@ class HealthInfoControllerTest {
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .dataPartStatus(null)
-                .dataFlowRequestedAt(LocalDateTime.now())
+                .dataFlowRequestedAt(LocalDateTime.now(in.org.projecteka.hiu.common.Utils.zOffset))
                 .patientId(requester)
                 .build();
 
@@ -367,7 +367,7 @@ class HealthInfoControllerTest {
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .dataPartStatus(null)
                 .patientId(requester)
-                .dataFlowRequestedAt(LocalDateTime.now().minusMinutes(5))
+                .dataFlowRequestedAt(LocalDateTime.now(in.org.projecteka.hiu.common.Utils.zOffset).minusMinutes(5))
                 .build();
 
         when(authenticator.verify(token)).thenReturn(just(caller));
@@ -394,7 +394,7 @@ class HealthInfoControllerTest {
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .consentArtefactId(null)
-                .patientDataRequestedAt(LocalDateTime.now().minusMinutes(5))
+                .patientDataRequestedAt(LocalDateTime.now(in.org.projecteka.hiu.common.Utils.zOffset).minusMinutes(5))
                 .patientId(requester)
                 .build();
 
@@ -422,7 +422,7 @@ class HealthInfoControllerTest {
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .consentRequestId(null)
-                .patientDataRequestedAt(LocalDateTime.now().minusMinutes(5))
+                .patientDataRequestedAt(LocalDateTime.now(in.org.projecteka.hiu.common.Utils.zOffset).minusMinutes(5))
                 .patientId(requester)
                 .build();
 
@@ -450,7 +450,7 @@ class HealthInfoControllerTest {
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .consentRequestId(null)
-                .patientDataRequestedAt(LocalDateTime.now().minusMinutes(5))
+                .patientDataRequestedAt(LocalDateTime.now(in.org.projecteka.hiu.common.Utils.zOffset).minusMinutes(5))
                 .patientId("some-other-request@ncg")
                 .build();
 

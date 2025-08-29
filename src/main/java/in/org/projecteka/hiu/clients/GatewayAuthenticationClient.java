@@ -6,6 +6,8 @@ import in.org.projecteka.hiu.common.Constants;
 import in.org.projecteka.hiu.common.Utils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.slf4j.MDC;
@@ -34,14 +36,18 @@ public class GatewayAuthenticationClient {
     }
 
     public Mono<Token> getTokenFor(String clientId, String clientSecret) {
+        String correlationId = MDC.get(CORRELATION_ID);
+        if (StringUtils.isBlank(correlationId)) {
+            correlationId = UUID.randomUUID().toString();
+        }
         return webclient
                 .post()
                 .uri(Constants.PATH_GATEWAY_SESSION)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
+                .header(CORRELATION_ID, correlationId)
                 .header(REQUEST_ID, UUID.randomUUID().toString())
                 .header(TIMESTAMP, Utils.getISOTimestamp())
-                .header(X_CM_ID,getCmSuffix(consentManagerServiceProperties.getSuffix()))
+                .header(X_CM_ID, getCmSuffix(consentManagerServiceProperties.getSuffix()))
                 .accept(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(requestWith(clientId, clientSecret)))
                 .retrieve()

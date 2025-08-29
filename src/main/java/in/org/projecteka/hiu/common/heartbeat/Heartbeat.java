@@ -3,6 +3,7 @@ package in.org.projecteka.hiu.common.heartbeat;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import in.org.projecteka.hiu.DatabaseProperties;
+import in.org.projecteka.hiu.common.Utils;
 import in.org.projecteka.hiu.common.heartbeat.model.HeartbeatResponse;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -34,12 +35,12 @@ public class Heartbeat {
     public Mono<HeartbeatResponse> getStatus() {
         try {
             if (cacheHealth.isUp() && isRabbitMQUp() && isPostgresUp()) {
-                return just(HeartbeatResponse.builder().timeStamp(now()).status(UP).build());
+                return just(HeartbeatResponse.builder().timeStamp(now(Utils.zOffset)).status(UP).build());
             }
-            return just(HeartbeatResponse.builder().timeStamp(now()).status(DOWN).error(of(SERVICE_DOWN)).build());
+            return just(HeartbeatResponse.builder().timeStamp(now(Utils.zOffset)).status(DOWN).error(of(SERVICE_DOWN)).build());
         } catch (IOException | TimeoutException e) {
             logger.error(format("Heartbeat is not healthy with failure: %s", e.getMessage()), e);
-            return just(HeartbeatResponse.builder().timeStamp(now()).status(DOWN).error(of(SERVICE_DOWN)).build());
+            return just(HeartbeatResponse.builder().timeStamp(now(Utils.zOffset)).status(DOWN).error(of(SERVICE_DOWN)).build());
         }
     }
 

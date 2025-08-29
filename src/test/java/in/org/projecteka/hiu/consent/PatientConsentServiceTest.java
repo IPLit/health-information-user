@@ -2,6 +2,7 @@ package in.org.projecteka.hiu.consent;
 
 import in.org.projecteka.hiu.HiuProperties;
 import in.org.projecteka.hiu.clients.GatewayServiceClient;
+import in.org.projecteka.hiu.common.Utils;
 import in.org.projecteka.hiu.common.cache.CacheAdapter;
 import in.org.projecteka.hiu.consent.model.ConsentRequestData;
 import in.org.projecteka.hiu.consent.model.PatientConsentRequest;
@@ -180,7 +181,7 @@ class PatientConsentServiceTest {
 
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .hipId(hipId)
-                .patientDataRequestedAt(LocalDateTime.now())
+                .patientDataRequestedAt(LocalDateTime.now(Utils.zOffset))
                 .dataRequestId(UUID.randomUUID().toString())
                 .build();
 
@@ -218,7 +219,7 @@ class PatientConsentServiceTest {
 
         var dataRequestDetail = TestBuilders.patientDataRequestDetail()
                 .hipId(hipId)
-                .patientDataRequestedAt(LocalDateTime.now())
+                .patientDataRequestedAt(LocalDateTime.now(Utils.zOffset))
                 .dataRequestId(UUID.randomUUID().toString())
                 .build();
 

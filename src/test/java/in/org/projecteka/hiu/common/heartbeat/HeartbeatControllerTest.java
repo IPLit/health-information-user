@@ -8,6 +8,7 @@ import in.org.projecteka.hiu.ErrorCode;
 import in.org.projecteka.hiu.common.Authenticator;
 import in.org.projecteka.hiu.common.Constants;
 import in.org.projecteka.hiu.common.TestBuilders;
+import in.org.projecteka.hiu.common.Utils;
 import in.org.projecteka.hiu.common.heartbeat.model.HeartbeatResponse;
 import in.org.projecteka.hiu.common.heartbeat.model.Status;
 import in.org.projecteka.hiu.consent.ConceptValidator;
@@ -84,7 +85,7 @@ class HeartbeatControllerTest {
     @Test
     void shouldGiveHIUStatusAsUp() throws JsonProcessingException {
         var heartbeatResponse = HeartbeatResponse.builder()
-                .timeStamp(LocalDateTime.now())
+                .timeStamp(LocalDateTime.now(Utils.zOffset))
                 .status(Status.UP)
                 .build();
         var heartbeatResponseJson = TestBuilders.OBJECT_MAPPER.writeValueAsString(heartbeatResponse);
@@ -103,7 +104,7 @@ class HeartbeatControllerTest {
     @Test
     void shouldGiveHIUStatusAsDown() throws JsonProcessingException {
         var heartbeatResponse = HeartbeatResponse.builder()
-                .timeStamp(LocalDateTime.now())
+                .timeStamp(LocalDateTime.now(Utils.zOffset))
                 .status(Status.DOWN)
                 .error(new Error(ErrorCode.SERVICE_DOWN,"Service Down"))
                 .build();

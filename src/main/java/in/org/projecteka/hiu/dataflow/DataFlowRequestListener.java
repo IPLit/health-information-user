@@ -144,7 +144,7 @@ public class DataFlowRequestListener {
     }
 
     private LocalDateTime getExpiryDate() {
-        return LocalDateTime.now().plusDays(dataFlowProperties.getOffsetInDays());
+        return LocalDateTime.now(in.org.projecteka.hiu.common.Utils.zOffset).plusDays(dataFlowProperties.getOffsetInDays());
     }
 
     @SneakyThrows

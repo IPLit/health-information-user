@@ -1,6 +1,8 @@
 package in.org.projecteka.hiu.consent.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import in.org.projecteka.hiu.common.Utils;
 import in.org.projecteka.hiu.consent.ConceptLookup;
 import in.org.projecteka.hiu.consent.model.consentmanager.*;
 import lombok.AllArgsConstructor;
@@ -9,7 +11,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.Valid;
-import java.time.LocalDateTime;
+
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static in.org.projecteka.hiu.consent.model.consentmanager.Frequency.ONE_HOUR;
@@ -60,7 +63,7 @@ public class Consent {
                 .hiTypes(getHiTypes())
                 .permission(getPermission())
                 .status(ConsentStatus.REQUESTED)
-                .createdDate(LocalDateTime.now())
+                .createdDate(ZonedDateTime.now(Utils.zOffset).toLocalDateTime())
                 .hip(hip)
                 .careContexts(getCareContexts())
                 .build();

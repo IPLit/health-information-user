@@ -19,7 +19,9 @@ class ConsentRequestRepresentationTest {
         var todayAt = LocalDateTime.parse("2020-06-02T10:15:02", formatter);
         var consentRequest = consentRequest()
                 .permission(Permission.builder().dataEraseAt(expiryAt).build())
-                .createdDate(todayAt).build();
+                .createdDate(todayAt)
+                .modifiedDate(todayAt)
+                .build();
         var patient = patient().identifier(consentRequest.getPatient().getId()).build();
         var expected = new ConsentRequestRepresentation(
                 consentRequest.getId(),

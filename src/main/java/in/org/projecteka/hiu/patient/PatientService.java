@@ -9,6 +9,7 @@ import in.org.projecteka.hiu.clients.Patient;
 import in.org.projecteka.hiu.clients.PatientSearchThrowable;
 import in.org.projecteka.hiu.common.DelayTimeoutException;
 import in.org.projecteka.hiu.common.GatewayResponse;
+import in.org.projecteka.hiu.common.Utils;
 import in.org.projecteka.hiu.common.cache.CacheAdapter;
 import in.org.projecteka.hiu.consent.PatientConsentService;
 import in.org.projecteka.hiu.patient.model.*;
@@ -97,7 +98,7 @@ public class PatientService {
         var requestId = UUID.randomUUID();
         var patientOnNotifyRequest = PatientStatusNotification
                 .builder()
-                .timestamp(LocalDateTime.now())
+                .timestamp(LocalDateTime.now(Utils.zOffset))
                 .requestId(requestId);
         GatewayResponse gatewayResponse = new GatewayResponse(requestID.toString());
         patientOnNotifyRequest.resp(gatewayResponse).build();

@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -168,7 +169,7 @@ public class HealthInfoManager {
                         if (dataRequestDetails.stream().anyMatch(this::isStatusNull)) {
                             logger.info("Some data parts are not yet received for data request id {}",
                                     dataRequestDetail.getDataRequestId());
-                            var status = now()
+                            var status = now(Utils.zOffset)
                                     .isAfter(dataRequestDetail.getDataFlowRequestedAt()
                                     .plusMinutes(serviceProperties.getDataPartWaitTime())) ?
                                     getStatusFor(dataRequestDetails) : PROCESSING;
@@ -201,7 +202,7 @@ public class HealthInfoManager {
     }
 
     private DataRequestStatus getStatusAgainstDate(LocalDateTime dateTime, Integer withinMinutes) {
-        return now().isAfter(dateTime.plusMinutes(withinMinutes)) ? ERRORED : PROCESSING;
+        return now(Utils.zOffset).isAfter(dateTime.plusMinutes(withinMinutes)) ? ERRORED : PROCESSING;
     }
 
     private DataRequestStatus getStatusFor(List<PatientDataRequestDetail> dataRequestDetails) {
@@ -236,7 +237,7 @@ public class HealthInfoManager {
 
     private boolean isConsentNotExpired(Map<String, String> consentDetail) {
         var consentExpiryDate = Utils.parseTimeStamp(consentDetail.get("consentExpiryDate"));
-        return consentExpiryDate.isAfter(now());
+        return consentExpiryDate.isAfter(ZonedDateTime.now(Utils.zOffset).toLocalDateTime());
     }
 
     private boolean isGrantedConsent(Map<String, String> consentDetail) {
