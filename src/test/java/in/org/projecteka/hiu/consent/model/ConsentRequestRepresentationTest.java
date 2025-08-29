@@ -20,7 +20,6 @@ class ConsentRequestRepresentationTest {
         var consentRequest = consentRequest()
                 .permission(Permission.builder().dataEraseAt(expiryAt).build())
                 .createdDate(todayAt)
-                .modifiedDate(todayAt)
                 .build();
         var patient = patient().identifier(consentRequest.getPatient().getId()).build();
         var expected = new ConsentRequestRepresentation(
