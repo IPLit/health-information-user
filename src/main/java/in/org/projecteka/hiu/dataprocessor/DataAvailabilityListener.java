@@ -18,6 +18,8 @@ import in.org.projecteka.hiu.dataprocessor.model.DataAvailableMessage;
 import in.org.projecteka.hiu.dicomweb.OrthancDicomWebServer;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -28,6 +30,7 @@ import org.springframework.amqp.rabbit.listener.MessageListenerContainer;
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static in.org.projecteka.hiu.ClientError.queueNotFound;
@@ -65,6 +68,9 @@ public class DataAvailabilityListener {
             var traceableMessage = to(message.getBody(), TraceableMessage.class);
             DataAvailableMessage dataAvailableMessage = deserializeMessage((traceableMessage.get().getMessage()));
             String correlationId = traceableMessage.get().getCorrelationId();
+            if (StringUtils.isBlank(correlationId)) {
+                correlationId = UUID.randomUUID().toString();
+            }
             MDC.put(Constants.CORRELATION_ID, correlationId);
             logger.info(String.format("Received notification of data availability for transaction id : %s",
                     dataAvailableMessage.getTransactionId()));

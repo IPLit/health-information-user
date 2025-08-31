@@ -154,6 +154,7 @@ public class PatientConsentService {
                 .patient(Patient.builder().id(requesterId).build())
                 .permission(Permission.builder().dataEraseAt(now(Utils.zOffset)
                         .plusMonths(consentServiceProperties.getConsentExpiryInMonths()))
+                        .dataGrantedOn(now(Utils.zOffset))
                         .dateRange(DateRange.builder()
                                 .from(dateFrom.atZone(Utils.zOffset).toLocalDateTime())
                                 .to(ZonedDateTime.now(Utils.zOffset).toLocalDateTime()).build())

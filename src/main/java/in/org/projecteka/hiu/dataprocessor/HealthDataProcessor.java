@@ -27,6 +27,8 @@ import in.org.projecteka.hiu.dataprocessor.model.SessionStatus;
 import in.org.projecteka.hiu.dataprocessor.model.StatusNotification;
 import in.org.projecteka.hiu.dataprocessor.model.StatusResponse;
 import in.org.projecteka.hiu.dataprocessor.model.Type;
+
+import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Organization;
@@ -42,12 +44,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -177,6 +181,9 @@ public class HealthDataProcessor {
         // https://github.com/reactor/reactor-core/issues/1667
 
         String correlationId = MDC.get(CORRELATION_ID);
+        if (StringUtils.isBlank(correlationId)) {
+            correlationId = UUID.randomUUID().toString();
+        }
         T result = publisher.block();
         MDC.put(CORRELATION_ID, correlationId);
         return result;
@@ -207,7 +214,7 @@ public class HealthDataProcessor {
                 .notification(Notification.builder()
                         .consentId(context.getConsentId())
                         .transactionId(context.getTransactionId())
-                        .doneAt(context.latestResourceDate())
+                        .doneAt(LocalDateTime.now(ZoneOffset.UTC))
                         .notifier(Notifier.builder()
                                 .type(Type.HIU)
                                 .id(hiuProperties.getId())

@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import static java.time.LocalDateTime.now;
+
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -82,6 +84,9 @@ public class ConsentRepository {
             "consent_request_id = $1";
     private static final String SELECT_CM_ID_FOR_A_CONSENT = "SELECT consent_artefact -> 'consentManager' ->> 'id' as " +
             "consentManagerId FROM consent_artefact WHERE consent_artefact_id=$1";
+
+    private static final String UPDATE_CONSENT_REQUEST_STATUS_AS_GRANTED = "UPDATE consent_request " +
+            "set status=$2, date_modified=$3, consent_request=$4 WHERE consent_request_id=$1";
 
     private final PgPool readWriteClient;
     private final PgPool readOnlyClient;
@@ -404,4 +409,24 @@ public class ConsentRepository {
                             monoSink.success(iterator.next().getString(0));
                         }));
     }
+
+    public Mono<Void> updateConsentRequestAsGranted(ConsentRequest consentRequest, String consentRequestId) {
+        if (consentRequest!=null && consentRequest.getPermission()!=null) {
+            var consentRequestPermission = consentRequest.getPermission();
+            consentRequestPermission.setDataGrantedOn(now(Utils.zOffset));
+            consentRequest.setPermission(consentRequestPermission);
+        }
+        return Mono.create(monoSink ->
+            readWriteClient.preparedQuery(UPDATE_CONSENT_REQUEST_STATUS_AS_GRANTED)
+                .execute(Tuple.of(consentRequestId, ConsentStatus.GRANTED.toString(), ZonedDateTime.now(Utils.zOffset).toLocalDateTime(), new JsonObject(from(consentRequest))),
+                    handler -> {
+                        if (handler.failed()) {
+                            logger.error(handler.cause().getMessage(), handler.cause());
+                            monoSink.error(dbOperationFailure("Failed to update consent request status"));
+                            return;
+                        }
+                        monoSink.success();
+                    }));
+    }
+
 }

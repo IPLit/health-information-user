@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static in.org.projecteka.hiu.common.Constants.getCmSuffix;
-import static in.org.projecteka.hiu.consent.model.ConsentStatus.GRANTED;
 import static reactor.core.publisher.Flux.fromIterable;
 import static reactor.core.publisher.Mono.defer;
 import static reactor.core.publisher.Mono.error;
@@ -52,8 +51,10 @@ public class GrantedConsentTask extends ConsentTask {
                     logger.error("Response came for unknown consent request {}", consentRequestId);
                     return error(ClientError.consentRequestNotFound());
                 }))
-                .flatMap(consentRequest -> consentRepository.updateConsentRequestStatus(GRANTED,
-                        consentRequestId).thenReturn(consentRequest))
+                .flatMap(consentRequest -> consentRepository.updateConsentRequestAsGranted(consentRequest, consentRequestId)
+                        .thenReturn(consentRequest))
+                //.flatMap(consentRequest -> consentRepository.updateConsentRequestStatus(GRANTED,
+                //        consentRequestId).thenReturn(consentRequest))
                 .map(consentRequest -> getCmSuffix(consentRequest.getPatient().getId()))
                 .flatMap(cmSuffix -> gatewayClient.sendConsentOnNotify(cmSuffix, buildConsentOnNotifyRequestForReference(consentNotification.getConsentArtefacts(), requestID))
                         .thenReturn(cmSuffix))
@@ -61,4 +62,5 @@ public class GrantedConsentTask extends ConsentTask {
                         .flatMap(reference -> perform(reference, consentRequestId, cmSuffix)))
                 .ignoreElements();
     }
+
 }

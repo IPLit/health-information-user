@@ -19,6 +19,8 @@ import in.org.projecteka.hiu.dataflow.model.KeyMaterial;
 import in.org.projecteka.hiu.dataflow.model.KeyStructure;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -70,6 +72,9 @@ public class DataFlowRequestListener {
             String correlationId = traceableMessage.get().getCorrelationId();
             String consentId = dataFlowRequest.getConsent().getId();
 
+            if (StringUtils.isBlank(correlationId)) {
+                correlationId = UUID.randomUUID().toString();
+            }
             MDC.put(Constants.CORRELATION_ID, correlationId);
             logger.info("Received data flow request with consent id : {}", consentId);
             try {

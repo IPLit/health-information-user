@@ -23,4 +23,6 @@ public class Permission {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = TIMESTAMP_PATTERN)
     private LocalDateTime dataEraseAt;
     private Frequency frequency;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = TIMESTAMP_PATTERN)
+    private LocalDateTime dataGrantedOn;
 }

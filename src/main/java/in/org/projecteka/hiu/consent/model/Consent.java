@@ -49,7 +49,8 @@ public class Consent {
                         AccessMode.VIEW,
                         getPermission().getDateRange(),
                         getPermission().getDataEraseAt(),
-                        ONE_HOUR),
+                        ONE_HOUR,
+                        getPermission().getDataGrantedOn()),
                 hip, careContexts);
     }
 
@@ -87,7 +88,8 @@ public class Consent {
                         AccessMode.VIEW,
                         getPermission().getDateRange(),
                         getPermission().getDataEraseAt(),
-                        ONE_HOUR))
+                        ONE_HOUR,
+                        getPermission().getDataGrantedOn()))
                 .hip(hip)
                 .build();
 

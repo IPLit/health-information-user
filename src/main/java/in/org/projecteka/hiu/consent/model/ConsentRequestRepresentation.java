@@ -30,7 +30,7 @@ public class ConsentRequestRepresentation {
                 consentRequest.getStatus(),
                 consentRequest.getPermission().getDataEraseAt(),
                 consentRequest.getCreatedDate(),
-                consentRequest.getCreatedDate());
+                consentRequest.getPermission().getDataGrantedOn());
     }
 }
 
