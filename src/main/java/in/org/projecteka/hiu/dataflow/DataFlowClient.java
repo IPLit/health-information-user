@@ -5,6 +5,8 @@ import in.org.projecteka.hiu.HiuProperties;
 import in.org.projecteka.hiu.common.Utils;
 import in.org.projecteka.hiu.dataflow.model.GatewayDataFlowRequest;
 import lombok.AllArgsConstructor;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,8 @@ import static java.util.function.Predicate.not;
 import static org.slf4j.LoggerFactory.getLogger;
 import static reactor.core.publisher.Mono.error;
 
+import java.util.UUID;
+
 @AllArgsConstructor
 public class DataFlowClient {
     private final WebClient.Builder webClientBuilder;
@@ -26,12 +30,16 @@ public class DataFlowClient {
     private static final Logger logger = getLogger(DataFlowClient.class);
 
     public Mono<Void> initiateDataFlowRequest(GatewayDataFlowRequest dataFlowRequest, String token, String cmSuffix, String requestId) {
+        String correlationId = MDC.get(CORRELATION_ID);
+        if (StringUtils.isBlank(correlationId)) {
+            correlationId = UUID.randomUUID().toString();
+        }
         return webClientBuilder.build()
                 .post()
                 .uri(gatewayProperties.getBaseUrl() + GATEWAY_PATH_HEALTH_INFORMATION_REQUEST)
                 .header("Authorization", token)
                 .header("X-CM-ID", cmSuffix)
-                .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
+                .header(CORRELATION_ID, correlationId)
                 .header(REQUEST_ID, requestId)
                 .header(TIMESTAMP, Utils.getISOTimestamp())
                 .header(X_HIU_ID, hiuProperties.getId())

@@ -415,6 +415,7 @@ public class ConsentRepository {
             var consentRequestPermission = consentRequest.getPermission();
             consentRequestPermission.setDataGrantedOn(now(Utils.zOffset));
             consentRequest.setPermission(consentRequestPermission);
+            consentRequest.setStatus(ConsentStatus.GRANTED);
         }
         return Mono.create(monoSink ->
             readWriteClient.preparedQuery(UPDATE_CONSENT_REQUEST_STATUS_AS_GRANTED)
