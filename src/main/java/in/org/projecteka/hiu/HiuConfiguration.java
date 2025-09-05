@@ -690,14 +690,15 @@ public class HiuConfiguration {
     @Bean
     public GatewayAuthenticationClient centralRegistryClient(
             @Qualifier("customBuilder") WebClient.Builder builder,
-            GatewayProperties gatewayProperties, ConsentManagerServiceProperties consentManagerServiceProperties) {
-        return new GatewayAuthenticationClient(builder, gatewayProperties.getBaseUrl(), consentManagerServiceProperties);
+            GatewayProperties gatewayProperties, ConsentManagerServiceProperties consentManagerServiceProperties,
+            HiuProperties hiuProperties) {
+        return new GatewayAuthenticationClient(builder, gatewayProperties.getBaseUrl(), consentManagerServiceProperties, hiuProperties);
     }
 
     @Bean
     public HealthInformationClient healthInformationClient(@Qualifier("customBuilder") WebClient.Builder builder,
-                                                           GatewayProperties gatewayProperties) {
-        return new HealthInformationClient(builder, gatewayProperties);
+                                                           GatewayProperties gatewayProperties, HiuProperties hiuProperties) {
+        return new HealthInformationClient(builder, gatewayProperties, hiuProperties);
     }
 
     @Bean
@@ -731,7 +732,7 @@ public class HiuConfiguration {
     @ConditionalOnProperty(value = "hiu.authorization.useCMAsIDP", havingValue = "true", matchIfMissing = true)
     @Bean("userAuthenticator")
     public Authenticator userAuthenticator(IdentityServiceProperties identityServiceProperties, GatewayProperties gatewayProperties, ConsentManagerServiceProperties consentManagerServiceProperties,
-                                           ConfigurableJWTProcessor<SecurityContext> jwtProcessor) throws ParseException {
+                                           ConfigurableJWTProcessor<SecurityContext> jwtProcessor, HiuProperties hiuProperties) throws ParseException {
         try {
             WebClient webClient = WebClient.builder().baseUrl(identityServiceProperties.getJwkUrl()).build();
 
@@ -739,6 +740,7 @@ public class HiuConfiguration {
                     .header(REQUEST_ID, UUID.randomUUID().toString())
                     .header(TIMESTAMP, Utils.getISOTimestamp())
                     .header(X_CM_ID, getCmSuffix(consentManagerServiceProperties.getSuffix()))
+                    .header(X_HIU_ID, hiuProperties.getId())
                     .retrieve()
                     .onStatus(Predicate.not(HttpStatus::is2xxSuccessful), clientResponse ->
                             clientResponse.bodyToMono(String.class)

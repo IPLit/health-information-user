@@ -1,6 +1,7 @@
 package in.org.projecteka.hiu.clients;
 
 import in.org.projecteka.hiu.GatewayProperties;
+import in.org.projecteka.hiu.HiuProperties;
 import in.org.projecteka.hiu.common.Constants;
 import in.org.projecteka.hiu.common.Utils;
 import in.org.projecteka.hiu.dataprocessor.model.HealthInfoNotificationRequest;
@@ -24,11 +25,13 @@ import static reactor.core.publisher.Mono.error;
 public class HealthInformationClient {
     private final WebClient client;
     private final GatewayProperties gatewayProperties;
+    private final HiuProperties hiuProperties;
     private static final Logger logger = getLogger(HealthInformationClient.class);
 
-    public HealthInformationClient(WebClient.Builder client, GatewayProperties gatewayProperties) {
+    public HealthInformationClient(WebClient.Builder client, GatewayProperties gatewayProperties, HiuProperties hiuProperties) {
         this.client = client.build();
         this.gatewayProperties = gatewayProperties;
+        this.hiuProperties = hiuProperties;
     }
 
     public Mono<HealthInformation> informationFrom(String url) {
@@ -60,6 +63,7 @@ public class HealthInformationClient {
                 .uri(gatewayProperties.getBaseUrl() + Constants.GATEWAY_PATH_HEALTH_INFORMATION_NOTIFY)
                 .header(AUTHORIZATION, token)
                 .header(X_CM_ID, consentManagerId)
+                .header(X_HIU_ID, hiuProperties.getId())
                 .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
                 .header(REQUEST_ID, UUID.randomUUID().toString())
                 .header(TIMESTAMP, Utils.getISOTimestamp())

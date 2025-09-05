@@ -2,6 +2,7 @@ package in.org.projecteka.hiu.clients;
 
 import in.org.projecteka.hiu.ClientError;
 import in.org.projecteka.hiu.ConsentManagerServiceProperties;
+import in.org.projecteka.hiu.HiuProperties;
 import in.org.projecteka.hiu.common.Constants;
 import in.org.projecteka.hiu.common.Utils;
 import lombok.AllArgsConstructor;
@@ -26,13 +27,16 @@ import static java.lang.String.format;
 public class GatewayAuthenticationClient {
     private final WebClient webclient;
 
+    private final HiuProperties hiuProperties;
     private final ConsentManagerServiceProperties consentManagerServiceProperties;
     private static final Logger logger = LogManager.getLogger(GatewayAuthenticationClient.class);
 
     public GatewayAuthenticationClient(WebClient.Builder webClient, String baseUrl,
-                                       ConsentManagerServiceProperties consentManagerServiceProperties) {
+                                       ConsentManagerServiceProperties consentManagerServiceProperties,
+                                       HiuProperties hiuProperties) {
         this.webclient = webClient.baseUrl(baseUrl).build();
         this.consentManagerServiceProperties = consentManagerServiceProperties;
+        this.hiuProperties = hiuProperties;
     }
 
     public Mono<Token> getTokenFor(String clientId, String clientSecret) {
@@ -48,6 +52,7 @@ public class GatewayAuthenticationClient {
                 .header(REQUEST_ID, UUID.randomUUID().toString())
                 .header(TIMESTAMP, Utils.getISOTimestamp())
                 .header(X_CM_ID, getCmSuffix(consentManagerServiceProperties.getSuffix()))
+                .header(X_HIU_ID, hiuProperties.getId())
                 .accept(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(requestWith(clientId, clientSecret)))
                 .retrieve()
