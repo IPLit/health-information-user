@@ -61,6 +61,7 @@ public class SecurityConfiguration {
             PATH_CONSENTS_HIU_NOTIFY,
             PATH_CONSENTS_ON_FETCH,
             PATH_HEALTH_INFORMATION_HIU_ON_REQUEST,
+            PATH_DATA_TRANSFER,
             PATH_CONSENT_REQUEST_ON_STATUS
     };
 
@@ -79,7 +80,6 @@ public class SecurityConfiguration {
             "/**.yaml",
             "/**.css",
             "/**.png",
-            PATH_DATA_TRANSFER,
             PATH_HEARTBEAT,
             PATH_READINESS,
             INTERNAL_PATH_PATIENT_CARE_CONTEXT_INFO,
@@ -148,6 +148,7 @@ public class SecurityConfiguration {
             }
 
             var token = exchange.getRequest().getHeaders().getFirst(AUTHORIZATION);
+            logger.debug("Received request " + exchange.getRequest().getURI() + " with token " + token);
 
             if (isEmpty(token)) {
                 return error(unauthorizedRequester());

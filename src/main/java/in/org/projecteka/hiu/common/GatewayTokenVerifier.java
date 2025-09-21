@@ -32,7 +32,7 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 public class GatewayTokenVerifier {
-    private final ConfigurableJWTProcessor<SecurityContext> jwtProcessor;
+    private ConfigurableJWTProcessor<SecurityContext> jwtProcessor;
     private final Logger logger = LogManager.getLogger(GatewayTokenVerifier.class);
 
     public GatewayTokenVerifier(JWKSet jwkSet) {
@@ -45,11 +45,12 @@ public class GatewayTokenVerifier {
         jwtProcessor.setJWSKeySelector(keySelector);
         jwtProcessor.setJWTClaimsSetVerifier(new DefaultJWTClaimsVerifier<>(
                 new JWTClaimsSet.Builder().build(),
-                new HashSet<>(Arrays.asList("sub", "iat", "exp", "scope", "clientId", "realm_access"))));
+                new HashSet<>(Arrays.asList("sub", "exp", "clientId"))));
     }
 
     public Mono<ServiceCaller> verify(String token) {
         try {
+            logger.debug(format("Verify gateway access with token: %s", token));
             var parts = token.split(" ");
             if (parts.length == 2) {
                 var credentials = parts[1];
@@ -59,7 +60,7 @@ public class GatewayTokenVerifier {
                                 var clientId = jwtClaimsSet.getStringClaim("clientId");
                                 return Mono.just(new ServiceCaller(clientId, getRoles(jwtClaimsSet)));
                             } catch (ParseException e) {
-                                logger.error(e);
+                                logger.error(format("Unauthorized gateway access with token: %s", token), e);
                                 return Mono.empty();
                             }
                         });
@@ -67,18 +68,23 @@ public class GatewayTokenVerifier {
             logger.error(format("Unauthorized access with token: %s", token));
             return Mono.empty();
         } catch (ParseException | BadJOSEException | JOSEException e) {
-            logger.error("Unauthorized access", e);
+            logger.error("Unauthorized gateway access with token: " + token, e);
             return Mono.empty();
         }
     }
 
     private List<Role> getRoles(JWTClaimsSet jwtClaimsSet) {
-        var realmAccess = (JSONObject) jwtClaimsSet.getClaim("realm_access");
-        return ((JSONArray) realmAccess.get("roles"))
-                .stream()
-                .map(Object::toString)
-                .map(mayBeRole -> Role.valueOfIgnoreCase(mayBeRole).orElse(null))
-                .filter(Objects::nonNull)
-                .collect(toList());
+        Object realmAccessObj = jwtClaimsSet.getClaim("realm_access");
+        if (realmAccessObj!=null && realmAccessObj instanceof JSONObject) {
+            JSONObject realmAccess = (JSONObject) realmAccessObj;
+            return ((JSONArray) realmAccess.get("roles"))
+                    .stream()
+                    .map(Object::toString)
+                    .map(mayBeRole -> Role.valueOfIgnoreCase(mayBeRole).orElse(null))
+                    .filter(Objects::nonNull)
+                    .collect(toList());
+        }
+        return List.of(Role.GATEWAY);
     }
+
 }

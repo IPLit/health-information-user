@@ -14,31 +14,35 @@ import static java.lang.String.format;
 
 public class UserAuthenticator implements Authenticator {
 
-    private final MACVerifier verifier;
+    private MACVerifier verifier = null;
     private final Logger logger = LogManager.getLogger(UserAuthenticator.class);
 
     public UserAuthenticator(byte[] sharedSecret) throws JOSEException {
-        verifier = new MACVerifier(sharedSecret);
+        try {
+            verifier = new MACVerifier(sharedSecret);
+        } catch (Exception e) {
+            logger.error("Error in setup MACVerifier, " + sharedSecret, e);
+        }
     }
 
     @Override
     public Mono<Caller> verify(String token) {
         try {
+            logger.debug(format("Verify user access with token: %s", token));
             var parts = token.split(" ");
             if (parts.length != 2)
                 return Mono.empty();
 
             var jwsObject = JWSObject.parse(parts[1]);
             if (!isValidToken(jwsObject)) {
-                logger.error(format("Unauthorized access with token: %s", token));
+                logger.error(format("Unauthorized user access with token: %s", token));
                 return Mono.empty();
             }
-
             var jsonObject = jwsObject.getPayload().toJSONObject();
             var isVerified = Boolean.parseBoolean(jsonObject.getAsString("isVerified"));
             return Mono.just(new Caller(jsonObject.getAsString("username"), false, jsonObject.getAsString("role"), isVerified));
         } catch (ParseException | JOSEException e) {
-            logger.error(format("Unauthorized access with token: %s %s", token, e));
+            logger.error(format("Unauthorized user access with token: %s %s", token, e));
         }
         return Mono.empty();
     }

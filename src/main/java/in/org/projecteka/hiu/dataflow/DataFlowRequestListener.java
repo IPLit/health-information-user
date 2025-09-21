@@ -42,16 +42,16 @@ import static reactor.core.publisher.Mono.defer;
 @AllArgsConstructor
 public class DataFlowRequestListener {
     private static final Logger logger = LoggerFactory.getLogger(DataFlowRequestListener.class);
-    private final MessageListenerContainerFactory messageListenerContainerFactory;
-    private final DestinationsConfig destinationsConfig;
-    private final DataFlowClient dataFlowClient;
-    private final DataFlowRepository dataFlowRepository;
-    private final Decryptor decryptor;
-    private final DataFlowProperties dataFlowProperties;
-    private final Gateway gateway;
-    private final CacheAdapter<String, DataFlowRequestKeyMaterial> dataFlowCache;
-    private final ConsentRepository consentRepository;
-    private final RabbitQueueNames queueNames;
+    private MessageListenerContainerFactory messageListenerContainerFactory;
+    private DestinationsConfig destinationsConfig;
+    private DataFlowClient dataFlowClient;
+    private DataFlowRepository dataFlowRepository;
+    private Decryptor decryptor;
+    private DataFlowProperties dataFlowProperties;
+    private Gateway gateway;
+    private CacheAdapter<String, DataFlowRequestKeyMaterial> dataFlowCache;
+    private ConsentRepository consentRepository;
+    private RabbitQueueNames queueNames;
 
     @PostConstruct
     @SneakyThrows
@@ -84,6 +84,7 @@ public class DataFlowRequestListener {
 
                 gateway.token()
                         .flatMap(token -> {
+                            logger.warn("Received data flow request " + dataFlowRequest.getDataPushUrl() + " with token " + token);
                             var gatewayDataFlowRequest = getDataFlowRequest(dataFlowRequest);
                             String requestId = UUID.randomUUID().toString();
                             logger.info("[DataFlowRequestListener] Initiating data flow request to consent manager with RequestID" +

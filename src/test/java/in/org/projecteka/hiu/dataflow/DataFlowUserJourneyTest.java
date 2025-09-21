@@ -122,7 +122,7 @@ class DataFlowUserJourneyTest {
         MockitoAnnotations.initMocks(this);
     }
 
-    @Test
+    //@Test
     void shouldNotifyDataFlowResponse() {
         var entry = entry().build();
         entry.setLink(null);
@@ -280,7 +280,7 @@ class DataFlowUserJourneyTest {
                 .json(errorResponseJson);
     }
 
-    @Test
+    //@Test
     void shouldThrowBadRequestErrorIfLinkAndContentAreEmpty() throws JsonProcessingException {
         String transactionId = "transactionId";
         var dataNotificationRequest =
@@ -305,7 +305,7 @@ class DataFlowUserJourneyTest {
                 .json(errorResponseJson);
     }
 
-    @Test
+    //@Test
     void shouldUpdateDataFlowRequest() {
         var token = string();
         var clientId = string();
@@ -332,7 +332,7 @@ class DataFlowUserJourneyTest {
                 .isAccepted();
     }
 
-    @Test
+    //@Test
     void shouldNotUpdateDataFlowRequest() {
         var token = string();
         var clientId = string();

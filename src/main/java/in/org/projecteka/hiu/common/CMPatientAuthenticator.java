@@ -42,7 +42,7 @@ public class CMPatientAuthenticator implements Authenticator {
 
     @Override
     public Mono<Caller> verify(String token) {
-        logger.debug("Authenticating {}", token);
+        logger.debug("Authenticating CMPatient with token " + token);
         var parts = token.split(" ");
         if (parts.length != 2) {
             return Mono.empty();
@@ -53,14 +53,14 @@ public class CMPatientAuthenticator implements Authenticator {
             try {
                 jwtClaimsSet = jwtProcessor.process(credentials, null);
             } catch (ParseException | BadJOSEException | JOSEException e) {
-                logger.error("Unauthorized access", e);
+                logger.error("Unauthorized CMPatient access with token " + token, e);
                 monoSink.success();
                 return;
             }
             try {
                 monoSink.success(from(jwtClaimsSet.getStringClaim("preferred_username")));
             } catch (ParseException e) {
-                logger.error(e.getMessage());
+                logger.error("Unauthorized CMPatient access with token " + token, e);
                 monoSink.success();
             }
         });
