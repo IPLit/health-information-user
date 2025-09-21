@@ -82,6 +82,7 @@ public class SecurityConfiguration {
             "/**.png",
             PATH_HEARTBEAT,
             PATH_READINESS,
+            PATH_DATA_TRANSFER,
             INTERNAL_PATH_PATIENT_CARE_CONTEXT_INFO,
             GET_CERT,
             "/sessions",
