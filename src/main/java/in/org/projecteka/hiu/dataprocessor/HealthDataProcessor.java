@@ -7,7 +7,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import in.org.projecteka.hiu.HiuProperties;
 import in.org.projecteka.hiu.clients.HealthInformationClient;
 import in.org.projecteka.hiu.common.Gateway;
-import in.org.projecteka.hiu.common.Utils;
 import in.org.projecteka.hiu.consent.ConsentRepository;
 import in.org.projecteka.hiu.dataflow.DataFlowRepository;
 import in.org.projecteka.hiu.dataflow.Decryptor;
@@ -106,7 +105,7 @@ public class HealthDataProcessor {
 
     private void processEntries(DataContext context) {
         try {
-            logger.info(String.format(
+            logger.warn(String.format(
                     "Received data from HIP for transaction: %s. Number of entries: %d. Trying to process data.",
                     context.getTransactionId(), context.getNumberOfEntries()));
             updateDataProcessStatus(context, "", HealthInfoStatus.PROCESSING, null);

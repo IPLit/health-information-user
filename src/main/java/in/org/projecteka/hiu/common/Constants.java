@@ -9,7 +9,8 @@ public class Constants {
     public static final String PATH_HEALTH_INFORMATION_HIU_ON_REQUEST = "/api/v3/hiu/health-information/on-request";
     public static final String PATH_HEARTBEAT = CURRENT_VERSION + "/heartbeat";
     public static final String X_CM_ID = "X-CM-ID";
-    public static final String PATH_DATA_TRANSFER = "/data/notification";
+    public static final String PATH_DATA_TRANSFER = "/hiu-api/data/notification";
+    public static final String PATH_HEALTH_INFORMATION_TRANSFER = "/health-information/transfer";
     public static final String EMPTY_STRING = "";
     public static final String APP_PATH_PATIENT_CONSENT_REQUEST = "/v1/patient/consent-request";
     public static final String APP_PATH_HIU_CONSENT_REQUESTS = "/v1/hiu/consent-requests";

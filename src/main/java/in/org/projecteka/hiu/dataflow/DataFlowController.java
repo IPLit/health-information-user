@@ -5,6 +5,8 @@ import in.org.projecteka.hiu.common.Constants;
 import in.org.projecteka.hiu.dataflow.model.DataFlowRequestResult;
 import in.org.projecteka.hiu.dataflow.model.DataNotificationRequest;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,12 +18,14 @@ import javax.validation.Valid;
 
 @RestController
 @AllArgsConstructor
+@Slf4j
 public class DataFlowController {
     private final DataFlowService dataFlowService;
 
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping(Constants.PATH_DATA_TRANSFER)
     public Mono<Void> dataNotification(@RequestBody DataNotificationRequest dataNotificationRequest) {
+        // log.warn("Received request for data Notification information: {}", dataNotificationRequest);
         if (dataNotificationRequest.getPageCount() > 1){
             return Mono.error(ClientError.paginationNotSupported());
         }
@@ -33,4 +37,15 @@ public class DataFlowController {
     public Mono<Void> onInitDataFlowRequest(@Valid @RequestBody DataFlowRequestResult dataFlowRequestResult) {
         return dataFlowService.updateDataFlowRequest(dataFlowRequestResult);
     }
+
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @PostMapping(Constants.PATH_HEALTH_INFORMATION_TRANSFER)
+    public Mono<Void> transferHealthInformation(@RequestBody DataNotificationRequest dataNotificationRequest) {
+        // log.warn("Received request for transferring health information: {}", dataNotificationRequest);
+        if (dataNotificationRequest.getPageCount() > 1) {
+            return Mono.error(ClientError.paginationNotSupported());
+        }
+        return dataFlowService.handleTransferHealthInformation(dataNotificationRequest);
+    }
+
 }

@@ -64,6 +64,7 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
 import lombok.SneakyThrows;
+
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Binding;
@@ -628,13 +629,26 @@ public class HiuConfiguration {
                                            DataAvailabilityPublisher dataAvailabilityPublisher,
                                            DataFlowServiceProperties properties,
                                            LocalDataStore localDataStore,
-                                           CacheAdapter<String, DataFlowRequestKeyMaterial> dataFlowCache) {
+                                           CacheAdapter<String, DataFlowRequestKeyMaterial> dataFlowCache,
+                                           HealthDataRepository healthDataRepository,
+                                           Gateway gateway,
+                                           Decryptor decryptor,
+                                           HealthInformationClient healthInformationClient,
+                                            HiuProperties hiuProperties,
+                                            ConsentRepository consentRepository
+                                           ) {
         return new DataFlowService(
                 dataFlowRepository,
                 dataAvailabilityPublisher,
                 properties,
                 localDataStore,
-                dataFlowCache);
+                dataFlowCache,
+                healthDataRepository,
+                gateway,
+                decryptor,
+                healthInformationClient,
+                hiuProperties,
+                consentRepository);
     }
 
     @Bean

@@ -41,6 +41,7 @@ import static in.org.projecteka.hiu.common.Constants.PATH_CONSENT_REQUESTS_ON_IN
 import static in.org.projecteka.hiu.common.Constants.PATH_CONSENT_REQUEST_ON_STATUS;
 import static in.org.projecteka.hiu.common.Constants.PATH_DATA_TRANSFER;
 import static in.org.projecteka.hiu.common.Constants.PATH_HEALTH_INFORMATION_HIU_ON_REQUEST;
+import static in.org.projecteka.hiu.common.Constants.PATH_HEALTH_INFORMATION_TRANSFER;
 import static in.org.projecteka.hiu.common.Constants.PATH_HEARTBEAT;
 import static in.org.projecteka.hiu.common.Constants.PATH_READINESS;
 import static in.org.projecteka.hiu.user.Role.GATEWAY;
@@ -62,6 +63,7 @@ public class SecurityConfiguration {
             PATH_CONSENTS_ON_FETCH,
             PATH_HEALTH_INFORMATION_HIU_ON_REQUEST,
             PATH_DATA_TRANSFER,
+            PATH_HEALTH_INFORMATION_TRANSFER,
             PATH_CONSENT_REQUEST_ON_STATUS
     };
 
@@ -83,6 +85,7 @@ public class SecurityConfiguration {
             PATH_HEARTBEAT,
             PATH_READINESS,
             PATH_DATA_TRANSFER,
+            PATH_HEALTH_INFORMATION_TRANSFER,
             INTERNAL_PATH_PATIENT_CARE_CONTEXT_INFO,
             GET_CERT,
             "/sessions",
