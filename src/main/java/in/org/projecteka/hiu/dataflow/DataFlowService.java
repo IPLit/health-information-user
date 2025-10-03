@@ -217,6 +217,7 @@ public class DataFlowService {
 
     private DataContext createDataContext(DataNotificationRequest dataNotificationRequest, Path dataFilePath, String hipId, String consentId) {
         try {
+            logger.info("Created context with hipId as {} from data file path {}", hipId, dataFilePath);
             return DataContext.builder()
                     .notifiedData(dataNotificationRequest)
                     .dataFilePath(dataFilePath)
@@ -233,43 +234,43 @@ public class DataFlowService {
 
     private void processEntries(DataContext context) {
         String transactionId = context.getTransactionId();
+        List<StatusResponse> statusResponses = new ArrayList<>();
         try {
             logger.info(String.format(
-                    "Received data for transaction: %s. Number of entries: %d. Processing data.",
-                    context.getTransactionId(), context.getNumberOfEntries()));
-            // updateDataProcessStatus(context, "", HealthInfoStatus.PROCESSING, context.latestResourceDate());
+                "Received data for transaction: %s. Number of entries: %d. Processing data.",
+                context.getTransactionId(), context.getNumberOfEntries()));
+            updateDataProcessStatus(context, "", HealthInfoStatus.PROCESSING, context.latestResourceDate()).subscribe();
             logger.info("Updated data process status to PROCESSING for transaction: {}", transactionId);
-
             List<String> dataErrors = new ArrayList<>();
-            List<StatusResponse> statusResponses = new ArrayList<>();
-            dataFlowRepository.getKeys(transactionId).doOnNext(keyMaterial -> {
+            dataFlowRepository.getKeys(transactionId).doOnSuccess(keyMaterial -> {
                 context.getNotifiedData().getEntries().forEach(entry -> {
                     String dataPartNumber = context.getDataPartNumber();
+                    Entry entryToProcess = entry;
                     if (!hasContent(entry)) {
                         healthInformationClient.informationFrom(entry.getLink()).doOnNext(healthInformation -> {
-                            var entryToProcess = entry;
                             if (healthInformation == null) {
                                 dataErrors.add("Health Information not found");
                                 healthDataRepository
                                         .insertErrorFor(transactionId, dataPartNumber, entry.getCareContextReference())
-                                    .doOnNext(errorResult -> {
+                                    .doOnSuccess(errorResult -> {
                                         statusResponses.add(getStatusResponse(entry, HiStatus.ERRORED, COULD_NOT_RECEIVE_DATA));
                                     }).subscribe();
                                 logger.error("Health Information not found for care-context: {}", entry.getCareContextReference());
                                 return;
                             }
-                            entryToProcess = Entry.builder()
+                            Entry processedEntry = Entry.builder()
                                     .content(healthInformation.getContent())
                                     .checksum(entry.getChecksum())
                                     .media(entry.getMedia())
                                     .careContextReference(entry.getCareContextReference())
                                     .build();
-                            var result = processEntryContent(context, entryToProcess, keyMaterial);
+                            logger.info("Fetched content for care-context: {}", entry.getCareContextReference());
+                            var result = processEntryContent(context, processedEntry, keyMaterial);
                             if (result.hasErrors()) {
                                 dataErrors.addAll(result.getErrors());
                                 healthDataRepository
-                                        .insertErrorFor(transactionId, dataPartNumber, entryToProcess.getCareContextReference())
-                                    .doOnNext(errorResult -> {
+                                        .insertErrorFor(transactionId, dataPartNumber, processedEntry.getCareContextReference())
+                                    .doOnSuccess(errorResult -> {
                                         statusResponses.add(getStatusResponse(entry, HiStatus.ERRORED, COULD_NOT_RECEIVE_DATA));
                                     }).subscribe();
                                 logger.error("Errors in processing entry for care-context: {}. Errors: {}",
@@ -283,21 +284,51 @@ public class DataFlowService {
                                     dataPartNumber,
                                     result.getResource(),
                                     result.latestResourceDate(),
-                                    entryToProcess.getCareContextReference(),
+                                    processedEntry.getCareContextReference(),
                                     result.getUniqueResourceId(),
                                     result.getDocumentType(),
                                     originId)
-                            .doOnNext(dataResult -> {
+                            .doOnSuccess(dataResult -> {
                                 statusResponses.add(getStatusResponse(entry, HiStatus.OK, "Data received successfully"));
                                 logger.info("Processed entry for care-context: {}", entry.getCareContextReference());
                             }).subscribe();
-                        });
+                        }).subscribe();
+                    } else {
+                        var result = processEntryContent(context, entryToProcess, keyMaterial);
+                        if (result.hasErrors()) {
+                            dataErrors.addAll(result.getErrors());
+                            healthDataRepository
+                                    .insertErrorFor(transactionId, dataPartNumber, entryToProcess.getCareContextReference())
+                                .doOnSuccess(errorResult -> {
+                                    statusResponses.add(getStatusResponse(entry, HiStatus.ERRORED, COULD_NOT_RECEIVE_DATA));
+                                }).subscribe();
+                            logger.error("Errors in processing entry for care-context: {}. Errors: {}",
+                                    entry.getCareContextReference(), String.join(",", result.getErrors()));
+                            return;
+                        }
+                        context.addTrackedResources(result.getTrackedResources());
+                        Optional<Pair<String, String>> originIdAndName = identifyOrigin(result.getOrigins());
+                        String originId = originIdAndName.isPresent() ? originIdAndName.get().getFirst() : context.getHipId();
+                        healthDataRepository.insertDataFor(transactionId,
+                                dataPartNumber,
+                                result.getResource(),
+                                result.latestResourceDate(),
+                                entryToProcess.getCareContextReference(),
+                                result.getUniqueResourceId(),
+                                result.getDocumentType(),
+                                originId)
+                        .doOnSuccess(dataResult -> {
+                            statusResponses.add(getStatusResponse(entry, HiStatus.OK, "Data received successfully"));
+                            logger.info("Processed entry for care-context: {}", entry.getCareContextReference());
+                        }).subscribe();
                     }
                 });
             }).doOnError(throwable -> {
                     logger.error("Error occurred while fetching key material for transaction id: {}. Error: {}",
                             context.getTransactionId(), throwable.getMessage());
-                    // updateDataProcessStatus(context, throwable.getMessage(), HealthInfoStatus.ERRORED, context.latestResourceDate());
+                    updateDataProcessStatus(context, throwable.getMessage(), HealthInfoStatus.ERRORED, context.latestResourceDate()).subscribe();
+                    notifyHealthInfoStatus(context, statusResponses, SessionStatus.FAILED);
+                    return;
             });
 
             var status = dataErrors.size() == context.getNumberOfEntries() ? HealthInfoStatus.ERRORED : HealthInfoStatus.PARTIAL;
@@ -306,16 +337,17 @@ public class DataFlowService {
                 var allErrors = "[ERROR]".concat(errors);
                 logger.error("Error occurred while processing data from HIP. Transaction id: {}. Errors: {}",
                         context.getTransactionId(), allErrors);
-                // updateDataProcessStatus(context, allErrors, status, context.latestResourceDate());
+                updateDataProcessStatus(context, allErrors, status, context.latestResourceDate()).subscribe();
                 notifyHealthInfoStatus(context, statusResponses, SessionStatus.FAILED);
             } else {
-                // updateDataProcessStatus(context, "", HealthInfoStatus.SUCCEEDED, context.latestResourceDate());
+                updateDataProcessStatus(context, "", HealthInfoStatus.SUCCEEDED, context.latestResourceDate()).subscribe();
                 notifyHealthInfoStatus(context, statusResponses, SessionStatus.TRANSFERRED);
             }
         } catch (Exception ex) {
             logger.error("Error occurred while processing data from HIP. Transaction id: {}.", context.getTransactionId());
             logger.error(ex.getMessage(), ex);
-            // updateDataProcessStatus(context, ex.getMessage(), HealthInfoStatus.ERRORED, context.latestResourceDate());
+            updateDataProcessStatus(context, ex.getMessage(), HealthInfoStatus.ERRORED, context.latestResourceDate()).subscribe();
+            notifyHealthInfoStatus(context, statusResponses, SessionStatus.FAILED);
         }
     }
 
@@ -327,12 +359,12 @@ public class DataFlowService {
                 .build();
     }
 
-    private void updateDataProcessStatus(DataContext context, String allErrors, HealthInfoStatus status, LocalDateTime latestResourceDate) {
-        dataFlowRepository.updateDataFlowWithStatus(context.getTransactionId(),
+    private Mono<Void> updateDataProcessStatus(DataContext context, String allErrors, HealthInfoStatus status, LocalDateTime latestResourceDate) {
+        return dataFlowRepository.updateDataFlowWithStatus(context.getTransactionId(),
                 context.getDataPartNumber(),
                 allErrors,
                 status,
-                latestResourceDate).subscribe();
+                latestResourceDate);
     }
 
     private void notifyHealthInfoStatus(DataContext context,
@@ -344,7 +376,7 @@ public class DataFlowService {
             .flatMap(token -> 
                 consentRepository.getConsentMangerId(healthInfoNotificationRequest.getNotification().getConsentId())
                 .map(cmId -> Pair.of(cmId, token)))
-            .flatMap(pair -> healthInformationClient.notifyHealthInfo(healthInfoNotificationRequest, pair.getSecond(), pair.getFirst()));
+            .flatMap(pair -> healthInformationClient.notifyHealthInfo(healthInfoNotificationRequest, pair.getSecond(), pair.getFirst())).subscribe();
     }
 
     private HealthInfoNotificationRequest getHealthInfoNotificationRequest(DataContext context,
