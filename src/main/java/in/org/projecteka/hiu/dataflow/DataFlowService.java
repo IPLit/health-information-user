@@ -239,8 +239,8 @@ public class DataFlowService {
             logger.info(String.format(
                 "Received data for transaction: %s. Number of entries: %d. Processing data.",
                 context.getTransactionId(), context.getNumberOfEntries()));
-            updateDataProcessStatus(context, "", HealthInfoStatus.PROCESSING, context.latestResourceDate()).subscribe();
-            logger.info("Updated data process status to PROCESSING for transaction: {}", transactionId);
+            // updateDataProcessStatus(context, "", HealthInfoStatus.PROCESSING, context.latestResourceDate()).subscribe(); 
+            // logger.info("Updated data process status to PROCESSING for transaction: {}", transactionId);
             List<String> dataErrors = new ArrayList<>();
             dataFlowRepository.getKeys(transactionId).doOnSuccess(keyMaterial -> {
                 context.getNotifiedData().getEntries().forEach(entry -> {
@@ -330,7 +330,6 @@ public class DataFlowService {
                     notifyHealthInfoStatus(context, statusResponses, SessionStatus.FAILED);
                     return;
             });
-
             var status = dataErrors.size() == context.getNumberOfEntries() ? HealthInfoStatus.ERRORED : HealthInfoStatus.PARTIAL;
             if (!dataErrors.isEmpty()) {
                 var errors = dataErrors.stream().map("[ERROR]"::concat).collect(joining());
