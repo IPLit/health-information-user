@@ -61,7 +61,6 @@ public class HealthInformationClient {
         return client
                 .post()
                 .uri(gatewayProperties.getBaseUrl() + Constants.GATEWAY_PATH_HEALTH_INFORMATION_NOTIFY)
-                .header("Transaction_Id", notificationRequest.getNotification().getTransactionId())
                 .header(AUTHORIZATION, token)
                 .header(X_CM_ID, consentManagerId)
                 .header(X_HIU_ID, hiuProperties.getId())

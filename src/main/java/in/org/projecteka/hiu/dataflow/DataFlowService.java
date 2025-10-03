@@ -377,7 +377,8 @@ public class DataFlowService {
             .flatMap(token -> 
                 consentRepository.getConsentMangerId(healthInfoNotificationRequest.getNotification().getConsentId())
                 .map(cmId -> Pair.of(cmId, token)))
-            .flatMap(pair -> healthInformationClient.notifyHealthInfo(healthInfoNotificationRequest, pair.getSecond(), pair.getFirst())).subscribe();
+            .flatMap(pair -> healthInformationClient.notifyHealthInfo(healthInfoNotificationRequest, pair.getSecond(), pair.getFirst()))
+            .subscribe();
     }
 
     private HealthInfoNotificationRequest getHealthInfoNotificationRequest(DataContext context,
@@ -389,7 +390,7 @@ public class DataFlowService {
                     .transactionId(context.getTransactionId())
                     .doneAt(LocalDateTime.now(ZoneOffset.UTC))
                     .notifier(Notifier.builder()
-                            .type(Type.HIP)
+                            .type(Type.HIU)
                             .id(hiuProperties.getId())
                             .build())
                     .statusNotification(StatusNotification.builder()
