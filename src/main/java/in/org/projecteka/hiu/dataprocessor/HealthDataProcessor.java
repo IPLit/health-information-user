@@ -165,7 +165,7 @@ public class HealthDataProcessor {
                 notifyHealthInfoStatus(context, statusResponses, SessionStatus.FAILED);
             } else {
                 updateDataProcessStatus(context, "", HealthInfoStatus.SUCCEEDED, context.latestResourceDate());
-                notifyHealthInfoStatus(context, statusResponses, SessionStatus.RECEIVED);
+                notifyHealthInfoStatus(context, statusResponses, SessionStatus.TRANSFERRED);
             }
         } catch (Exception ex) {
             logger.error("Error occurred while processing data from HIP. Transaction id: {}.", context.getTransactionId());
