@@ -232,12 +232,14 @@ public class DataFlowService {
     }
 
     private void processEntries(DataContext context) {
+        String transactionId = context.getTransactionId();
         try {
             logger.info(String.format(
                     "Received data for transaction: %s. Number of entries: %d. Processing data.",
                     context.getTransactionId(), context.getNumberOfEntries()));
-            updateDataProcessStatus(context, "", HealthInfoStatus.PROCESSING, context.latestResourceDate());
-            String transactionId = context.getTransactionId();
+            // updateDataProcessStatus(context, "", HealthInfoStatus.PROCESSING, context.latestResourceDate());
+            logger.info("Updated data process status to PROCESSING for transaction: {}", transactionId);
+
             List<String> dataErrors = new ArrayList<>();
             List<StatusResponse> statusResponses = new ArrayList<>();
             dataFlowRepository.getKeys(transactionId).doOnNext(keyMaterial -> {
@@ -295,7 +297,7 @@ public class DataFlowService {
             }).doOnError(throwable -> {
                     logger.error("Error occurred while fetching key material for transaction id: {}. Error: {}",
                             context.getTransactionId(), throwable.getMessage());
-                    updateDataProcessStatus(context, throwable.getMessage(), HealthInfoStatus.ERRORED, context.latestResourceDate());
+                    // updateDataProcessStatus(context, throwable.getMessage(), HealthInfoStatus.ERRORED, context.latestResourceDate());
             });
 
             var status = dataErrors.size() == context.getNumberOfEntries() ? HealthInfoStatus.ERRORED : HealthInfoStatus.PARTIAL;
@@ -304,16 +306,16 @@ public class DataFlowService {
                 var allErrors = "[ERROR]".concat(errors);
                 logger.error("Error occurred while processing data from HIP. Transaction id: {}. Errors: {}",
                         context.getTransactionId(), allErrors);
-                updateDataProcessStatus(context, allErrors, status, context.latestResourceDate());
+                // updateDataProcessStatus(context, allErrors, status, context.latestResourceDate());
                 notifyHealthInfoStatus(context, statusResponses, SessionStatus.FAILED);
             } else {
-                updateDataProcessStatus(context, "", HealthInfoStatus.SUCCEEDED, context.latestResourceDate());
+                // updateDataProcessStatus(context, "", HealthInfoStatus.SUCCEEDED, context.latestResourceDate());
                 notifyHealthInfoStatus(context, statusResponses, SessionStatus.TRANSFERRED);
             }
         } catch (Exception ex) {
             logger.error("Error occurred while processing data from HIP. Transaction id: {}.", context.getTransactionId());
             logger.error(ex.getMessage(), ex);
-            updateDataProcessStatus(context, ex.getMessage(), HealthInfoStatus.ERRORED, context.latestResourceDate());
+            // updateDataProcessStatus(context, ex.getMessage(), HealthInfoStatus.ERRORED, context.latestResourceDate());
         }
     }
 
