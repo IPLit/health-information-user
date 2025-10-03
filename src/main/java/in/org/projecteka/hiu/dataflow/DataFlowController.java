@@ -25,7 +25,6 @@ public class DataFlowController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping(Constants.PATH_DATA_TRANSFER)
     public Mono<Void> dataNotification(@RequestBody DataNotificationRequest dataNotificationRequest) {
-        // log.warn("Received request for data Notification information: {}", dataNotificationRequest);
         if (dataNotificationRequest.getPageCount() > 1){
             return Mono.error(ClientError.paginationNotSupported());
         }
@@ -41,7 +40,6 @@ public class DataFlowController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping(Constants.PATH_HEALTH_INFORMATION_TRANSFER)
     public Mono<Void> transferHealthInformation(@RequestBody DataNotificationRequest dataNotificationRequest) {
-        // log.warn("Received request for transferring health information: {}", dataNotificationRequest);
         if (dataNotificationRequest.getPageCount() > 1) {
             return Mono.error(ClientError.paginationNotSupported());
         }
