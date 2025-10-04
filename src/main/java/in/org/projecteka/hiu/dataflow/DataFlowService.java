@@ -26,16 +26,12 @@ import in.org.projecteka.hiu.dataprocessor.model.StatusNotification;
 import in.org.projecteka.hiu.dataprocessor.model.StatusResponse;
 import in.org.projecteka.hiu.dataprocessor.model.Type;
 import lombok.AllArgsConstructor;
-import static in.org.projecteka.hiu.common.Constants.CORRELATION_ID;
-
-import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Organization;
 import org.hl7.fhir.r4.model.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.data.util.Pair;
 
 import ca.uhn.fhir.context.FhirContext;
@@ -53,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -189,7 +184,6 @@ public class DataFlowService {
         logger.warn("[DataFlowService] Received handleTransferHealthInformation for transactionId={}", dataNotificationRequest.getTransactionId());
         List<Entry> invalidEntries = dataNotificationRequest.getEntries().parallelStream().filter(entry ->
                 !(hasLink(entry) || hasContent(entry))).collect(Collectors.toList());
-
         if (!invalidEntries.isEmpty()) {
             logger.error("Entry must either have content or provide a link.");
             return Mono.error(ClientError.invalidEntryError("Entry must either have content or provide a link."));
@@ -202,21 +196,19 @@ public class DataFlowService {
 
         return dataFlowRepository.getConsentId(consentRequestId)
             .flatMap(consentId ->
-                consentRepository.getHipId(consentId)
-                    .map(hipId -> Pair.of(consentId, hipId))
-            )
-            .flatMap(pair -> {
-                String consentId = pair.getFirst();
-                String hipId = pair.getSecond();
-                DataContext context = createDataContext(dataNotificationRequest, dataFilePath, hipId, consentId);
-                if (context != null && context.getNotifiedData() != null) {
-                    processEntries(context);
-                    return Mono.empty();
-                } else {
-                    logger.error("Could not create handleTransferHealthInformation context for transactionId={}", dataNotificationRequest.getTransactionId());
-                    return Mono.error(new RuntimeException("Could not create context"));
-                }
-            });
+                consentRepository.getHipId(consentId).map(hipId -> Pair.of(consentId, hipId)))
+            .flatMap(pair -> Mono.just(createDataContext(dataNotificationRequest, dataFilePath, pair.getSecond(), pair.getFirst())))
+            .flatMap(context -> dataFlowRepository.getKeys(context.getTransactionId())
+                .flatMap(keyMaterial -> {
+                    if (keyMaterial != null) {
+                        processEntries(context, keyMaterial);
+                        return Mono.empty();
+                    } else {
+                        logger.error("Could not create handleTransferHealthInformation context for transactionId={}", dataNotificationRequest.getTransactionId());
+                        return Mono.error(new RuntimeException("Could not create context"));
+                    }
+                })
+            );
     }
 
     private DataContext createDataContext(DataNotificationRequest dataNotificationRequest, Path dataFilePath, String hipId, String consentId) {
@@ -236,14 +228,13 @@ public class DataFlowService {
         }
     }
 
-    private void processEntries(DataContext context) {
+    private void processEntries(DataContext context, DataFlowRequestKeyMaterial keyMaterial) {
         String transactionId = context.getTransactionId();
         try {
             logger.info(String.format(
                 "Received data for transaction: %s. Number of entries: %d. Processing data.",
                 context.getTransactionId(), context.getNumberOfEntries()));
             List<String> dataErrors = new ArrayList<>();
-            DataFlowRequestKeyMaterial keyMaterial = blockPublisher(dataFlowRepository.getKeys(transactionId));
             if (keyMaterial != null) {
                 List<Entry> entries = context.getNotifiedData().getEntries();
                 for (int indexProcessed = 0; indexProcessed < entries.size(); indexProcessed++) {
@@ -561,19 +552,6 @@ public class DataFlowService {
         Organization organization = domainOrgList.get(0);
         Optional<Identifier> identifier = getAffinityDomainIdentifier(hfrAffinityDomains, organization);
         return  identifier.isPresent() ? Optional.of(Pair.of(identifier.get().getValue(), organization.getName())) : Optional.empty();
-    }
-
-    private <T> T blockPublisher(Mono<T> publisher) {
-        // block() clears the context, we should put correlationId back again in context.
-        // https://github.com/reactor/reactor-core/issues/1667
-
-        String correlationId = MDC.get(CORRELATION_ID);
-        if (StringUtils.isBlank(correlationId)) {
-            correlationId = UUID.randomUUID().toString();
-        }
-        T result = publisher.block();
-        MDC.put(CORRELATION_ID, correlationId);
-        return result;
     }
 
 }
