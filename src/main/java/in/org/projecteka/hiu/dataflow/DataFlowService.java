@@ -2,6 +2,7 @@ package in.org.projecteka.hiu.dataflow;
 
 import in.org.projecteka.hiu.ClientError;
 import in.org.projecteka.hiu.HiuProperties;
+import in.org.projecteka.hiu.LocalDicomServerProperties;
 import in.org.projecteka.hiu.clients.HealthInformationClient;
 import in.org.projecteka.hiu.common.Gateway;
 import in.org.projecteka.hiu.common.cache.CacheAdapter;
@@ -12,8 +13,17 @@ import in.org.projecteka.hiu.dataflow.model.DataFlowRequestResult;
 import in.org.projecteka.hiu.dataflow.model.DataNotificationRequest;
 import in.org.projecteka.hiu.dataflow.model.Entry;
 import in.org.projecteka.hiu.dataflow.model.HealthInfoStatus;
+import in.org.projecteka.hiu.dataprocessor.BinaryResourceProcessor;
+import in.org.projecteka.hiu.dataprocessor.CompositionResourceProcessor;
+import in.org.projecteka.hiu.dataprocessor.ConditionResourceProcessor;
+import in.org.projecteka.hiu.dataprocessor.DiagnosticReportResourceProcessor;
+import in.org.projecteka.hiu.dataprocessor.DocumentReferenceResourceProcessor;
 import in.org.projecteka.hiu.dataprocessor.HITypeResourceProcessor;
 import in.org.projecteka.hiu.dataprocessor.HealthDataRepository;
+import in.org.projecteka.hiu.dataprocessor.ImmunizationRecommendationProcessor;
+import in.org.projecteka.hiu.dataprocessor.ImmunizationResourceProcessor;
+import in.org.projecteka.hiu.dataprocessor.MedicationRequestResourceProcessor;
+import in.org.projecteka.hiu.dataprocessor.ObservationResourceProcessor;
 import in.org.projecteka.hiu.dataprocessor.model.BundleContext;
 import in.org.projecteka.hiu.dataprocessor.model.DataContext;
 import in.org.projecteka.hiu.dataprocessor.model.HealthInfoNotificationRequest;
@@ -25,6 +35,7 @@ import in.org.projecteka.hiu.dataprocessor.model.SessionStatus;
 import in.org.projecteka.hiu.dataprocessor.model.StatusNotification;
 import in.org.projecteka.hiu.dataprocessor.model.StatusResponse;
 import in.org.projecteka.hiu.dataprocessor.model.Type;
+import in.org.projecteka.hiu.dicomweb.OrthancDicomWebServer;
 import lombok.AllArgsConstructor;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Identifier;
@@ -75,6 +86,7 @@ public class DataFlowService {
     private final HiuProperties hiuProperties;
     private final ConsentRepository consentRepository;
     private final FhirContext fhirContext = FhirContext.forR4();
+    private final LocalDicomServerProperties dicomServerProperties;
     private final List<HITypeResourceProcessor> resourceProcessors = new ArrayList<>();
 
     private static final Logger logger = LoggerFactory.getLogger(DataFlowService.class);
@@ -187,6 +199,20 @@ public class DataFlowService {
         if (!invalidEntries.isEmpty()) {
             logger.error("Entry must either have content or provide a link.");
             return Mono.error(ClientError.invalidEntryError("Entry must either have content or provide a link."));
+        }
+
+        if (resourceProcessors.isEmpty()) {
+            resourceProcessors.addAll(Arrays.<HITypeResourceProcessor>asList(
+                    new CompositionResourceProcessor(),
+                    new DocumentReferenceResourceProcessor(),
+                    new ObservationResourceProcessor(),
+                    new ConditionResourceProcessor(),
+                    new MedicationRequestResourceProcessor(),
+                    new DiagnosticReportResourceProcessor(new OrthancDicomWebServer(dicomServerProperties)),
+                    new ImmunizationResourceProcessor(),
+                    new ImmunizationRecommendationProcessor(),
+                    new BinaryResourceProcessor()
+            ));
         }
 
         String consentRequestId = dataNotificationRequest.getTransactionId();
@@ -464,9 +490,10 @@ public class DataFlowService {
                 logger.info("Processing bundle id: {}", bundle.getId());
                 bundle.getEntry().forEach(bundleEntry -> {
                     ResourceType resourceType = bundleEntry.getResource().getResourceType();
-                    logger.info("bundle entry resource type:  {}", resourceType);
+                    logger.info("bundle entry resource type: {}", resourceType);
                     HITypeResourceProcessor processor = identifyResourceProcessor(resourceType);
                     if (processor != null) {
+                        logger.info("bundle entry resource type {} processing... with {}", resourceType, processor.getClass().getSimpleName());
                         processor.process(bundleEntry.getResource(), context, bundleContext, null);
                     }
                 });

@@ -634,8 +634,9 @@ public class HiuConfiguration {
                                            Gateway gateway,
                                            Decryptor decryptor,
                                            HealthInformationClient healthInformationClient,
-                                            HiuProperties hiuProperties,
-                                            ConsentRepository consentRepository
+                                           HiuProperties hiuProperties,
+                                           ConsentRepository consentRepository,
+                                           LocalDicomServerProperties dicomServerProperties
                                            ) {
         return new DataFlowService(
                 dataFlowRepository,
@@ -648,7 +649,8 @@ public class HiuConfiguration {
                 decryptor,
                 healthInformationClient,
                 hiuProperties,
-                consentRepository);
+                consentRepository,
+                dicomServerProperties);
     }
 
     @Bean
