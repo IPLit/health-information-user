@@ -239,7 +239,7 @@ public class DataFlowService {
                 "Received data for transaction: %s. Number of entries: %d. Processing data.",
                 context.getTransactionId(), context.getNumberOfEntries()));
             List<String> dataErrors = new ArrayList<>();
-            dataFlowRepository.getKeys(transactionId).doOnNext(keyMaterial -> {
+            dataFlowRepository.getKeys(transactionId).doOnSuccess(keyMaterial -> {
                 List<Entry> entries = context.getNotifiedData().getEntries();
                 for (int indexProcessed = 0; indexProcessed < entries.size(); indexProcessed++) {
                     Entry entry = entries.get(indexProcessed);
@@ -250,7 +250,7 @@ public class DataFlowService {
                     String dataPartNumber = context.getDataPartNumber();
                     Entry entryToProcess = entry;
                     if (!hasContent(entry)) {
-                        healthInformationClient.informationFrom(entry.getLink()).doOnNext(healthInformation -> {
+                        healthInformationClient.informationFrom(entry.getLink()).doOnSuccess(healthInformation -> {
                             boolean isError = false;
                             if (healthInformation == null) {
                                 isError = true;
