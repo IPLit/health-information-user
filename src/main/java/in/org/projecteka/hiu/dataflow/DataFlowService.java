@@ -217,7 +217,7 @@ public class DataFlowService {
 
     private DataContext createDataContext(DataNotificationRequest dataNotificationRequest, Path dataFilePath, String hipId, String consentId) {
         try {
-            logger.info("Created context with hipId as {} from data file path {}", hipId, dataFilePath);
+            logger.info("Created context with hipId as {} and data file path {}", hipId, dataFilePath);
             return DataContext.builder()
                     .notifiedData(dataNotificationRequest)
                     .dataFilePath(dataFilePath)
@@ -239,8 +239,13 @@ public class DataFlowService {
                 "Received data for transaction: %s. Number of entries: %d. Processing data.",
                 context.getTransactionId(), context.getNumberOfEntries()));
             List<String> dataErrors = new ArrayList<>();
-            dataFlowRepository.getKeys(transactionId).doOnSuccess(keyMaterial -> {
-                context.getNotifiedData().getEntries().forEach(entry -> {
+            dataFlowRepository.getKeys(transactionId).doOnNext(keyMaterial -> {
+                List<Entry> entries = context.getNotifiedData().getEntries();
+                for (int indexProcessed = 0; indexProcessed < entries.size(); indexProcessed++) {
+                    Entry entry = entries.get(indexProcessed);
+                    int currentIndex = indexProcessed + 1;
+                    logger.info("Processing entry {}/{} for care-context: {}", currentIndex,
+                        context.getNumberOfEntries(), entry.getCareContextReference());
                     List<StatusResponse> statusResponses = new ArrayList<>();
                     String dataPartNumber = context.getDataPartNumber();
                     Entry entryToProcess = entry;
@@ -306,7 +311,7 @@ public class DataFlowService {
                         }).subscribe();
                     } else {
                         boolean isError = false;
-                        var result = processEntryContent(context, entryToProcess, keyMaterial);
+                        var result = processEntryContent(context, entry, keyMaterial);
                         if (result.hasErrors()) {
                             isError = true;
                             dataErrors.addAll(result.getErrors());
@@ -345,7 +350,25 @@ public class DataFlowService {
                             notifyHealthInfoStatus(context, statusResponses, SessionStatus.TRANSFERRED);
                         }
                     }
-                });
+                }
+                List<StatusResponse> statResponses = new ArrayList<>();
+                var status = dataErrors.size() == context.getNumberOfEntries() ? HealthInfoStatus.ERRORED : HealthInfoStatus.PARTIAL;
+                if (!dataErrors.isEmpty()) {
+                    var errors = dataErrors.stream().map("[ERROR]"::concat).collect(joining());
+                    var allErrors = "[ERROR]".concat(errors);
+                    logger.error("Error occurred while processing data from HIP. Transaction id: {}. Errors: {}",
+                            context.getTransactionId(), allErrors);
+                    statResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.ERRORED,
+                    "Error occurred while processing data from HIP"));
+                    updateDataProcessStatus(context, allErrors, status, context.latestResourceDate()).subscribe();
+                    notifyHealthInfoStatus(context, statResponses, SessionStatus.FAILED);
+                } else {
+                    logger.info("Successfully processed data from HIP for transaction id: {}.", context.getTransactionId());
+                    statResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.OK,
+                    "Data received successfully"));
+                    updateDataProcessStatus(context, "", HealthInfoStatus.SUCCEEDED, context.latestResourceDate()).subscribe();
+                    notifyHealthInfoStatus(context, statResponses, SessionStatus.TRANSFERRED);
+                }
             }).doOnError(throwable -> {
                 logger.error("Error occurred while fetching key material for transaction id: {}. Error: {}",
                         context.getTransactionId(), throwable.getMessage());
@@ -353,25 +376,6 @@ public class DataFlowService {
                 dataErrors.add("Error occurred while fetching key material");
                 statusResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.ERRORED, "Error occurred while fetching key material"));
             });
-
-            List<StatusResponse> statResponses = new ArrayList<>();
-            var status = dataErrors.size() == context.getNumberOfEntries() ? HealthInfoStatus.ERRORED : HealthInfoStatus.PARTIAL;
-            if (!dataErrors.isEmpty()) {
-                var errors = dataErrors.stream().map("[ERROR]"::concat).collect(joining());
-                var allErrors = "[ERROR]".concat(errors);
-                logger.error("Error occurred while processing data from HIP. Transaction id: {}. Errors: {}",
-                        context.getTransactionId(), allErrors);
-                statResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.ERRORED,
-                 "Error occurred while processing data from HIP"));
-                updateDataProcessStatus(context, allErrors, status, context.latestResourceDate()).subscribe();
-                notifyHealthInfoStatus(context, statResponses, SessionStatus.FAILED);
-            } else {
-                logger.info("Successfully processed data from HIP for transaction id: {}.", context.getTransactionId());
-                statResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.OK,
-                 "Data received successfully"));
-                updateDataProcessStatus(context, "", HealthInfoStatus.SUCCEEDED, context.latestResourceDate()).subscribe();
-                notifyHealthInfoStatus(context, statResponses, SessionStatus.TRANSFERRED);
-            }
         } catch (Exception ex) {
             logger.error("Error occurred while processing data from HIP. Transaction id: {}.", context.getTransactionId());
             logger.error(ex.getMessage(), ex);
