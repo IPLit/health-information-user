@@ -64,7 +64,8 @@ public class SecurityConfiguration {
             PATH_HEALTH_INFORMATION_HIU_ON_REQUEST,
             PATH_DATA_TRANSFER,
             PATH_HEALTH_INFORMATION_TRANSFER,
-            PATH_CONSENT_REQUEST_ON_STATUS
+            PATH_CONSENT_REQUEST_ON_STATUS,
+            GET_CERT
     };
 
     // Deprecated: These APIs are no longer supported and will return a 410 Gone status
@@ -87,7 +88,7 @@ public class SecurityConfiguration {
             PATH_DATA_TRANSFER,
             PATH_HEALTH_INFORMATION_TRANSFER,
             INTERNAL_PATH_PATIENT_CARE_CONTEXT_INFO,
-            GET_CERT,
+            // GET_CERT,
             "/sessions",
             "/config"};
 

@@ -725,9 +725,34 @@ public class HiuConfiguration {
     }
 
     @Bean("centralRegistryJWKSet")
-    public JWKSet centralRegistryJWKSet(GatewayProperties gatewayProperties)
+    public JWKSet centralRegistryJWKSet(GatewayProperties gatewayProperties, Gateway gateway,
+            HiuProperties hiuProperties, ConsentManagerServiceProperties consentManagerServiceProperties)
             throws IOException, ParseException {
-        return JWKSet.load(new URL(gatewayProperties.getJwkUrl()));
+
+        try {
+            String token = gateway.token().block();
+            if (token == null || token.isEmpty()) {
+                throw new RuntimeException("Unable to fetch token from Gateway in centralRegistryJWKSet");
+            }
+            WebClient webClient = WebClient.builder().baseUrl(gatewayProperties.getJwkUrl()).build();
+            String jwksString = webClient.get()
+                .header(org.springframework.http.HttpHeaders.AUTHORIZATION, token)
+                .header(REQUEST_ID, UUID.randomUUID().toString())
+                .header(TIMESTAMP, Utils.getISOTimestamp())
+                .header(X_CM_ID, getCmSuffix(consentManagerServiceProperties.getSuffix()))
+                .header(X_HIU_ID, hiuProperties.getId())
+                .retrieve()
+                .onStatus(Predicate.not(HttpStatus::is2xxSuccessful), clientResponse ->
+                        clientResponse.bodyToMono(String.class)
+                                .flatMap(errorBody -> Mono.error(new RuntimeException("Error fetching JWKS: " + errorBody))))
+                .bodyToMono(String.class)
+                .timeout(ofMillis(gatewayProperties.getRequestTimeout() + 8000))
+                .block();
+            return JWKSet.parse(jwksString);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @Bean
