@@ -464,7 +464,7 @@ public class DataFlowService {
     private ProcessedEntry processEntryContent(DataContext context,
                                                Entry entry,
                                                DataFlowRequestKeyMaterial keyMaterial) {
-        logger.info("Process entry for care-context: {}", entry.getCareContextReference());
+        logger.info("Processing entry for care-context: {} with media {}", entry.getCareContextReference(), entry.getMedia());
         var mayBeParser = getEntryParser(entry.getMedia());
 
         return mayBeParser.map(parser -> {
