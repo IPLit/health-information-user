@@ -26,13 +26,16 @@ import in.org.projecteka.hiu.dataprocessor.model.StatusNotification;
 import in.org.projecteka.hiu.dataprocessor.model.StatusResponse;
 import in.org.projecteka.hiu.dataprocessor.model.Type;
 import lombok.AllArgsConstructor;
+import static in.org.projecteka.hiu.common.Constants.CORRELATION_ID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Organization;
 import org.hl7.fhir.r4.model.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.data.util.Pair;
 
 import ca.uhn.fhir.context.FhirContext;
@@ -50,6 +53,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -239,7 +243,8 @@ public class DataFlowService {
                 "Received data for transaction: %s. Number of entries: %d. Processing data.",
                 context.getTransactionId(), context.getNumberOfEntries()));
             List<String> dataErrors = new ArrayList<>();
-            dataFlowRepository.getKeys(transactionId).doOnSuccess(keyMaterial -> {
+            DataFlowRequestKeyMaterial keyMaterial = blockPublisher(dataFlowRepository.getKeys(transactionId));
+            if (keyMaterial != null) {
                 List<Entry> entries = context.getNotifiedData().getEntries();
                 for (int indexProcessed = 0; indexProcessed < entries.size(); indexProcessed++) {
                     Entry entry = entries.get(indexProcessed);
@@ -369,13 +374,16 @@ public class DataFlowService {
                     updateDataProcessStatus(context, "", HealthInfoStatus.SUCCEEDED, context.latestResourceDate()).subscribe();
                     notifyHealthInfoStatus(context, statResponses, SessionStatus.TRANSFERRED);
                 }
-            }).doOnError(throwable -> {
-                logger.error("Error occurred while fetching key material for transaction id: {}. Error: {}",
-                        context.getTransactionId(), throwable.getMessage());
-                List<StatusResponse> statusResponses = new ArrayList<>();
-                dataErrors.add("Error occurred while fetching key material");
-                statusResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.ERRORED, "Error occurred while fetching key material"));
-            });
+            } else {
+                String errorMsg = "Key material not found for transactionId: " + context.getTransactionId();
+                logger.error("Error occurred while processing data from HIP. Transaction id: {}. Error: {}",
+                        context.getTransactionId(), errorMsg);
+                List<StatusResponse> statResponses = new ArrayList<>();
+                statResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.ERRORED,
+                    errorMsg));
+                updateDataProcessStatus(context, errorMsg, HealthInfoStatus.ERRORED, context.latestResourceDate()).subscribe();
+                notifyHealthInfoStatus(context, statResponses, SessionStatus.FAILED);
+            }
         } catch (Exception ex) {
             logger.error("Error occurred while processing data from HIP. Transaction id: {}.", context.getTransactionId());
             logger.error(ex.getMessage(), ex);
@@ -539,7 +547,6 @@ public class DataFlowService {
         return Collections.emptyList();
     }
 
-
     private Optional<Pair<String, String>> identifyOrigin(List<Organization> origins) {
         if ((origins == null) || origins.isEmpty()) {
             return Optional.empty();
@@ -554,6 +561,19 @@ public class DataFlowService {
         Organization organization = domainOrgList.get(0);
         Optional<Identifier> identifier = getAffinityDomainIdentifier(hfrAffinityDomains, organization);
         return  identifier.isPresent() ? Optional.of(Pair.of(identifier.get().getValue(), organization.getName())) : Optional.empty();
+    }
+
+    private <T> T blockPublisher(Mono<T> publisher) {
+        // block() clears the context, we should put correlationId back again in context.
+        // https://github.com/reactor/reactor-core/issues/1667
+
+        String correlationId = MDC.get(CORRELATION_ID);
+        if (StringUtils.isBlank(correlationId)) {
+            correlationId = UUID.randomUUID().toString();
+        }
+        T result = publisher.block();
+        MDC.put(CORRELATION_ID, correlationId);
+        return result;
     }
 
 }
