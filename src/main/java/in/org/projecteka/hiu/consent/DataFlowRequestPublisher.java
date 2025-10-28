@@ -54,7 +54,7 @@ public class DataFlowRequestPublisher {
                     destinationInfo.getExchange(),
                     destinationInfo.getRoutingKey(),
                     traceableMessage);
-            logger.info("Broadcasting data flow request with consent id : " + consentArtefactId);
+            logger.info("Broadcasting data flow request with consent id : " + consentArtefactId + ", dataPushUrl as: " + dataPushUrl);
             monoSink.success();
         });
     }

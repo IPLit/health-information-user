@@ -56,6 +56,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -261,9 +262,9 @@ public class DataFlowService {
                 "Received data for transaction: %s. Number of entries: %d. Processing data.",
                 context.getTransactionId(), context.getNumberOfEntries()));
             List<String> dataErrors = new ArrayList<>();
-            if (keyMaterial != null) {
+            if (keyMaterial != null && context.getNotifiedData().getEntries()!=null && context.getNotifiedData().getEntries().size() > 0) {
                 List<Entry> entries = context.getNotifiedData().getEntries();
-                for (int indexProcessed = 0; indexProcessed < entries.size(); indexProcessed++) {
+                for (int indexProcessed = 0; entries!=null && indexProcessed < entries.size(); indexProcessed++) {
                     Entry entry = entries.get(indexProcessed);
                     int currentIndex = indexProcessed + 1;
                     logger.info("Processing entry {}/{} for care-context: {}", currentIndex,
@@ -465,55 +466,70 @@ public class DataFlowService {
                                                Entry entry,
                                                DataFlowRequestKeyMaterial keyMaterial) {
         logger.info("Processing entry for care-context: {} with media {}", entry.getCareContextReference(), entry.getMedia());
+        
         var mayBeParser = getEntryParser(entry.getMedia());
-
         return mayBeParser.map(parser -> {
-            ProcessedEntry result = new ProcessedEntry();
-            String decryptedContent;
-            try {
-                decryptedContent = decryptor.decrypt(context.getKeyMaterial(), keyMaterial, entry.getContent());
-            } catch (Exception e) {
-                logger.error("Error while decrypting {exception}", e);
-                result.addError("Could not read encrypted content from file");
-                return result;
-            }
-            Bundle bundle = parser.parseResource(Bundle.class, decryptedContent);
-            if (!isValidBundleType(bundle)) {
-                result.addError("Can not process entry content, invalid envelope." +
-                        "Entry content is either not a FHIR Bundle type COLLECTION or DOCUMENT. " +
-                        "For Document bundle type (e.g Discharge Summary), the first entry must be composition.");
-                return result;
-            }
-            Function<ResourceType, HITypeResourceProcessor> resourceProcessor = this::identifyResourceProcessor;
-            BundleContext bundleContext = new BundleContext(bundle, resourceProcessor);
-            try {
-                logger.info("Processing bundle id: {}", bundle.getId());
-                bundle.getEntry().forEach(bundleEntry -> {
-                    ResourceType resourceType = bundleEntry.getResource().getResourceType();
-                    logger.info("bundle entry resource type: {}", resourceType);
-                    HITypeResourceProcessor processor = identifyResourceProcessor(resourceType);
-                    if (processor != null) {
-                        logger.info("bundle entry resource type {} processing... with {}", resourceType, processor.getClass().getSimpleName());
-                        processor.process(bundleEntry.getResource(), context, bundleContext, null);
-                    }
-                });
-                result.setEncoded(parser.encodeResourceToString(bundle));
-                result.setUniqueResourceId(bundleContext.getBundleUniqueId());
-                result.setDocumentType(bundleContext.getDocumentType());
-                result.setOrigins(bundleContext.getOrigins());
-                result.addTrackedResources(bundleContext.getTrackedResources(), bundleContext.getBundleDate());
-                return result;
-            } catch (Exception e) {
-                logger.error("Could not process bundle {exception}", e);
-                result.addError(String.format("Could not process bundle with id: %s, error-message: %s",
-                        bundle.getId(), e.getMessage()));
-                return result;
-            }
+            return processEntryWithParser(context, entry, keyMaterial, parser);
         }).orElseGet(() -> {
+            logger.error("No parser found for media type: {}", entry.getMedia());
             ProcessedEntry result = new ProcessedEntry();
-            result.addError("Can't process entry content. Unknown media type.");
+            result.addError("Can not process entry content, invalid media type. Supported media types are " +
+                    MEDIA_APPLICATION_FHIR_JSON + " and " + MEDIA_APPLICATION_FHIR_XML);
             return result;
         });
+    }
+
+    private ProcessedEntry processEntryWithParser(DataContext context,
+                                                  Entry entry,
+                                                  DataFlowRequestKeyMaterial keyMaterial,
+                                                  IParser parser) {
+
+        logger.info("Parser found for Entry with media type: {}", entry.getMedia());
+
+        ProcessedEntry result = new ProcessedEntry();
+        String decryptedContent;
+        try {
+            decryptedContent = decryptor.decrypt(context.getKeyMaterial(), keyMaterial, entry.getContent());
+        } catch (Exception e) {
+            logger.error("Error while decrypting {exception}", e);
+            result.addError("Could not read encrypted content from file");
+            return result;
+        }
+        Bundle bundle = fhirContext.newJsonParser().parseResource(Bundle.class, decryptedContent);
+        if (!isValidBundleType(bundle)) {
+            result.addError("Can not process entry content, invalid envelope." +
+                    "Entry content is either not a FHIR Bundle type COLLECTION or DOCUMENT. " +
+                    "For Document bundle type (e.g Discharge Summary), the first entry must be composition.");
+            return result;
+        }
+        Function<ResourceType, HITypeResourceProcessor> resourceProcessor = this::identifyResourceProcessor;
+        BundleContext bundleContext = new BundleContext(bundle, resourceProcessor);
+        try {
+            logger.info("Processing bundle id: {} with timestamp {}", bundle.getId(), bundle.getTimestamp());
+            if (bundle.getTimestamp() == null) {
+                bundle.setTimestamp(new Date());
+            }
+            bundle.getEntry().forEach(bundleEntry -> {
+                ResourceType resourceType = bundleEntry.getResource().getResourceType();
+                logger.info("bundle entry resource type: {}", resourceType);
+                HITypeResourceProcessor processor = identifyResourceProcessor(resourceType);
+                if (processor != null) {
+                    logger.info("bundle entry resource type {} processing... with {}", resourceType, processor.getClass().getName());
+                    processor.process(bundleEntry.getResource(), context, bundleContext, null);
+                }
+            });
+            result.setEncoded(parser.encodeResourceToString(bundle));
+            result.setUniqueResourceId(bundleContext.getBundleUniqueId());
+            result.setDocumentType(bundleContext.getDocumentType());
+            result.setOrigins(bundleContext.getOrigins());
+            result.addTrackedResources(bundleContext.getTrackedResources(), bundleContext.getBundleDate());
+            return result;
+        } catch (Exception e) {
+            logger.error("Could not process bundle {exception}", e);
+            result.addError(String.format("Could not process bundle with id: %s, error-message: %s",
+                    bundle.getId(), e.getMessage()));
+            return result;
+        }
     }
 
     private HITypeResourceProcessor identifyResourceProcessor(ResourceType resourceType) {

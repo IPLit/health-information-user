@@ -89,7 +89,11 @@ public class Decryptor {
         byte[] xorOfRandoms = xorOfRandom(randomKeySender, savedKeyMaterial.getRandomKey());
         byte[] iv = Arrays.copyOfRange(xorOfRandoms, xorOfRandoms.length - 12, xorOfRandoms.length);
         var aesKey = generateAesKey(xorOfRandoms, sharedKey);
-        return decrypt(getBytesForBase64String(encryptedMessage), aesKey,iv);
+        String decryptedString = decrypt(getBytesForBase64String(encryptedMessage), aesKey,iv);
+        decryptedString = decryptedString.replaceAll("\n", "");
+        decryptedString = decryptedString.replaceAll("\t", "");
+        logger.info("decryptedString: " + decryptedString);
+        return decryptedString.trim();
     }
 
     private PrivateKey loadPrivateKey (byte [] data) throws Exception
