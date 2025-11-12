@@ -49,6 +49,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import reactor.core.publisher.Mono;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -69,6 +70,8 @@ import static reactor.core.publisher.Mono.defer;
 
 @AllArgsConstructor
 public class DataFlowService {
+    private final int MbInBytes = 1000000;
+    private final int dataFlowSizeLimitInMb = 27;
     public static final String MEDIA_APPLICATION_FHIR_JSON = "application/fhir+json";
     public static final String MEDIA_APPLICATION_FHIR_XML = "application/fhir+xml";
     private static final String COULD_NOT_RECEIVE_DATA = "Couldn't receive data";
@@ -186,11 +189,11 @@ public class DataFlowService {
     }
 
     private boolean hasContent(Entry entry) {
-        return (entry.getContent() != null) && !entry.getContent().isBlank();
+        return (entry.getContent() != null && !entry.getContent().isBlank() && !IsLinkable(entry.getContent()));
     }
 
     private boolean hasLink(Entry entry) {
-        return (entry.getLink() != null) && !entry.getLink().isBlank();
+        return (entry.getContent() != null && !entry.getContent().isBlank() && IsLinkable(entry.getContent()));
     }
 
     public Mono<Void> handleTransferHealthInformation(DataNotificationRequest dataNotificationRequest) {
@@ -272,8 +275,8 @@ public class DataFlowService {
                     List<StatusResponse> statusResponses = new ArrayList<>();
                     String dataPartNumber = context.getDataPartNumber();
                     Entry entryToProcess = entry;
-                    if (!hasContent(entry)) {
-                        healthInformationClient.informationFrom(entry.getLink()).doOnSuccess(healthInformation -> {
+                    if (hasLink(entry)) {
+                        healthInformationClient.informationFrom(entry.getContent()).doOnSuccess(healthInformation -> {
                             boolean isError = false;
                             if (healthInformation == null) {
                                 isError = true;
@@ -462,6 +465,15 @@ public class DataFlowService {
             .build();
     }
 
+    private boolean IsLinkable(String serializedBundle) {
+        byte [] allBytes = serializedBundle.getBytes(StandardCharsets.UTF_8);
+        return allBytes.length >= DataSizeLimitInBytes();
+    }
+
+    private int DataSizeLimitInBytes() {
+        return dataFlowSizeLimitInMb * MbInBytes;
+    }
+
     private ProcessedEntry processEntryContent(DataContext context,
                                                Entry entry,
                                                DataFlowRequestKeyMaterial keyMaterial) {
@@ -484,7 +496,7 @@ public class DataFlowService {
                                                   DataFlowRequestKeyMaterial keyMaterial,
                                                   IParser parser) {
 
-        logger.info("Parser found for Entry with media type: {}", entry.getMedia());
+        logger.info("Parser {} found for Entry with media type: {}", parser.getClass().getName(), entry.getMedia());
 
         ProcessedEntry result = new ProcessedEntry();
         String decryptedContent;
@@ -495,7 +507,7 @@ public class DataFlowService {
             result.addError("Could not read encrypted content from file");
             return result;
         }
-        Bundle bundle = fhirContext.newJsonParser().parseResource(Bundle.class, decryptedContent);
+        Bundle bundle = parser.parseResource(Bundle.class, decryptedContent);
         if (!isValidBundleType(bundle)) {
             result.addError("Can not process entry content, invalid envelope." +
                     "Entry content is either not a FHIR Bundle type COLLECTION or DOCUMENT. " +
@@ -505,7 +517,7 @@ public class DataFlowService {
         Function<ResourceType, HITypeResourceProcessor> resourceProcessor = this::identifyResourceProcessor;
         BundleContext bundleContext = new BundleContext(bundle, resourceProcessor);
         try {
-            logger.info("Processing bundle id: {} with timestamp {}", bundle.getId(), bundle.getTimestamp());
+            logger.info("Processing bundle id: {} with timestamp {} with resourceProcessor {}", bundle.getId(), bundle.getTimestamp(), resourceProcessor.getClass().getName());
             if (bundle.getTimestamp() == null) {
                 bundle.setTimestamp(new Date());
             }

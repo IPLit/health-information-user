@@ -55,6 +55,8 @@ public class Constants {
 
     public static final String HPIN_NOT_FOUND_ERROR = "ABDM Health Professional Identifier value not found for user";
 
+    public static final String X_HIP_ID = "X-HIP-ID";
+
     private Constants() {
     }
 

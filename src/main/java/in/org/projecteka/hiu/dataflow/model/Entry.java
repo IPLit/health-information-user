@@ -13,6 +13,5 @@ public class Entry {
     private String content;
     private String media;
     private String checksum;
-    private String link;
     private String careContextReference;
 }

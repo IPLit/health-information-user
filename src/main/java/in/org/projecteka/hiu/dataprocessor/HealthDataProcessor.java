@@ -39,6 +39,7 @@ import org.springframework.data.util.Pair;
 import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -61,6 +62,8 @@ import static in.org.projecteka.hiu.dataflow.model.HealthInfoStatus.PARTIAL;
 import static java.util.stream.Collectors.joining;
 
 public class HealthDataProcessor {
+    private final int MbInBytes = 1000000;
+    private final int dataFlowSizeLimitInMb = 27;
     public static final String MEDIA_APPLICATION_FHIR_JSON = "application/fhir+json";
     public static final String MEDIA_APPLICATION_FHIR_XML = "application/fhir+xml";
     private static final Logger logger = LoggerFactory.getLogger(HealthDataProcessor.class);
@@ -116,8 +119,8 @@ public class HealthDataProcessor {
             context.getNotifiedData().getEntries().forEach(entry -> {
                 var entryToProcess = entry;
                 String dataPartNumber = context.getDataPartNumber();
-                if (!hasContent(entry)) {
-                    var healthInformation = blockPublisher(healthInformationClient.informationFrom(entry.getLink()));
+                if (hasLink(entry)) {
+                    var healthInformation = blockPublisher(healthInformationClient.informationFrom(entry.getContent()));
                     if (healthInformation == null) {
                         dataErrors.add("Health Information not found");
                         blockPublisher(healthDataRepository
@@ -347,8 +350,21 @@ public class HealthDataProcessor {
         return Optional.empty();
     }
 
+    private boolean IsLinkable(String serializedBundle) {
+        byte [] allBytes = serializedBundle.getBytes(StandardCharsets.UTF_8);
+        return allBytes.length >= DataSizeLimitInBytes();
+    }
+
+    private int DataSizeLimitInBytes() {
+        return dataFlowSizeLimitInMb * MbInBytes;
+    }
+    
     private boolean hasContent(Entry entry) {
-        return (entry.getContent() != null) && !entry.getContent().isBlank();
+        return (entry.getContent() != null && !entry.getContent().isBlank() && !IsLinkable(entry.getContent()));
+    }
+
+    private boolean hasLink(Entry entry) {
+        return (entry.getContent() != null && !entry.getContent().isBlank() && IsLinkable(entry.getContent()));
     }
 
     private Optional<Identifier> getAffinityDomainIdentifier(List<String> domains, Organization organization) {

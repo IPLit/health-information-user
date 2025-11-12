@@ -83,17 +83,17 @@ public class Decryptor {
                           DataFlowRequestKeyMaterial savedKeyMaterial,
                           String encryptedMessage) throws Exception {
         var senderPublicKey = receivedKeyMaterial.getDhPublicKey().getKeyValue();
+        logger.info("senderPublicKey expiry: " + receivedKeyMaterial.getDhPublicKey().getExpiry());
+        logger.info("senderPublicKey nonce: " + receivedKeyMaterial.getNonce());
         var randomKeySender = receivedKeyMaterial.getNonce();
         String sharedKey = doECDH(getBytesForBase64String(savedKeyMaterial.getPrivateKey())
                 , getBytesForBase64String(senderPublicKey));
+        logger.info("senderPublicKey sharedKey: " + sharedKey);
         byte[] xorOfRandoms = xorOfRandom(randomKeySender, savedKeyMaterial.getRandomKey());
         byte[] iv = Arrays.copyOfRange(xorOfRandoms, xorOfRandoms.length - 12, xorOfRandoms.length);
         var aesKey = generateAesKey(xorOfRandoms, sharedKey);
         String decryptedString = decrypt(getBytesForBase64String(encryptedMessage), aesKey,iv);
-        decryptedString = decryptedString.replaceAll("\n", "");
-        decryptedString = decryptedString.replaceAll("\t", "");
-        logger.info("decryptedString: " + decryptedString);
-        return decryptedString.trim();
+        return decryptedString;
     }
 
     private PrivateKey loadPrivateKey (byte [] data) throws Exception

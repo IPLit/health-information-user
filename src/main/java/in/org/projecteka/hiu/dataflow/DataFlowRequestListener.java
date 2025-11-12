@@ -131,7 +131,7 @@ public class DataFlowRequestListener {
         return DataFlowRequestKeyMaterial.builder()
                 .privateKey(privateKey)
                 .publicKey(publicKey)
-                .randomKey(decryptor.generateRandomKey())
+                .randomKey(UUID.randomUUID().toString())
                 .build();
     }
 

@@ -52,7 +52,7 @@ public class GatewayAuthenticationClient {
                 .header(REQUEST_ID, UUID.randomUUID().toString())
                 .header(TIMESTAMP, Utils.getISOTimestamp())
                 .header(X_CM_ID, getCmSuffix(consentManagerServiceProperties.getSuffix()))
-                .header(X_HIU_ID, hiuProperties.getId())
+                // .header(X_HIU_ID, hiuProperties.getId())
                 .accept(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(requestWith(clientId, clientSecret)))
                 .retrieve()

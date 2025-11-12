@@ -125,7 +125,6 @@ class DataFlowUserJourneyTest {
     //@Test
     void shouldNotifyDataFlowResponse() {
         var entry = entry().build();
-        entry.setLink(null);
         entry.setContent("Some Dummy Content XYZ 1");
         List<Entry> entries = new ArrayList<>();
         entries.add(entry);
