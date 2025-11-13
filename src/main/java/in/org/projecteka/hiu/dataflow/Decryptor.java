@@ -59,7 +59,7 @@ public class Decryptor {
     public byte [] getEncodedPublicKey(PublicKey key) throws Exception
     {
         ECPublicKey ecKey = (ECPublicKey)key;
-        return ecKey.getQ().getEncoded(false);
+        return ecKey.getQ().getEncoded(true);
     }
 
     public byte [] getEncodedPrivateKey(PrivateKey key) throws Exception
@@ -89,6 +89,7 @@ public class Decryptor {
         String sharedKey = doECDH(getBytesForBase64String(savedKeyMaterial.getPrivateKey())
                 , getBytesForBase64String(senderPublicKey));
         logger.info("senderPublicKey sharedKey: " + sharedKey);
+        logger.info("savedKeyMaterial.getRandomKey: " + savedKeyMaterial.getRandomKey());
         byte[] xorOfRandoms = xorOfRandom(randomKeySender, savedKeyMaterial.getRandomKey());
         byte[] iv = Arrays.copyOfRange(xorOfRandoms, xorOfRandoms.length - 12, xorOfRandoms.length);
         var aesKey = generateAesKey(xorOfRandoms, sharedKey);
