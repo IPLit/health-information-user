@@ -268,13 +268,13 @@ public class DataFlowService {
             List<String> dataErrors = new ArrayList<>();
             if (keyMaterial != null && context.getNotifiedData().getEntries()!=null && context.getNotifiedData().getEntries().size() > 0) {
                 List<Entry> entries = context.getNotifiedData().getEntries();
+                List<StatusResponse> statusResponses = new ArrayList<>();
+                String dataPartNumber = context.getDataPartNumber();
                 for (int indexProcessed = 0; entries!=null && indexProcessed < entries.size(); indexProcessed++) {
                     Entry entry = entries.get(indexProcessed);
                     int currentIndex = indexProcessed + 1;
                     logger.info("Processing entry {}/{} for care-context: {}", currentIndex,
                         context.getNumberOfEntries(), entry.getCareContextReference());
-                    List<StatusResponse> statusResponses = new ArrayList<>();
-                    String dataPartNumber = context.getDataPartNumber();
                     Entry entryToProcess = entry;
                     if (hasLink(entry)) {
                         healthInformationClient.informationFrom(entry.getContent()).doOnSuccess(healthInformation -> {
@@ -326,15 +326,6 @@ public class DataFlowService {
                                     }).subscribe();
                                 }
                             }
-                            if (isError) {
-                                var errors = dataErrors.stream().map("[ERROR]"::concat).collect(joining());
-                                var allErrors = "[ERROR]".concat(errors);
-                                updateDataProcessStatus(context, allErrors, HealthInfoStatus.ERRORED, context.latestResourceDate()).subscribe();
-                                notifyHealthInfoStatus(context, statusResponses, SessionStatus.FAILED);
-                            } else {
-                                updateDataProcessStatus(context, "", HealthInfoStatus.SUCCEEDED, context.latestResourceDate()).subscribe();
-                                notifyHealthInfoStatus(context, statusResponses, SessionStatus.TRANSFERRED);
-                            }
                         }).subscribe();
                     } else {
                         boolean isError = false;
@@ -367,53 +358,43 @@ public class DataFlowService {
                                 logger.info("Processed entry for care-context: {}", entry.getCareContextReference());
                             }).subscribe();
                         }
-                        if (isError) {
-                            var errors = dataErrors.stream().map("[ERROR]"::concat).collect(joining());
-                            var allErrors = "[ERROR]".concat(errors);
-                            updateDataProcessStatus(context, allErrors, HealthInfoStatus.ERRORED, context.latestResourceDate()).subscribe();
-                            notifyHealthInfoStatus(context, statusResponses, SessionStatus.FAILED);
-                        } else {
-                            updateDataProcessStatus(context, "", HealthInfoStatus.SUCCEEDED, context.latestResourceDate()).subscribe();
-                            notifyHealthInfoStatus(context, statusResponses, SessionStatus.TRANSFERRED);
-                        }
                     }
                 }
-                List<StatusResponse> statResponses = new ArrayList<>();
                 var status = dataErrors.size() == context.getNumberOfEntries() ? HealthInfoStatus.ERRORED : HealthInfoStatus.PARTIAL;
                 if (!dataErrors.isEmpty()) {
                     var errors = dataErrors.stream().map("[ERROR]"::concat).collect(joining());
                     var allErrors = "[ERROR]".concat(errors);
                     logger.error("Error occurred while processing data from HIP. Transaction id: {}. Errors: {}",
                             context.getTransactionId(), allErrors);
-                    statResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.ERRORED,
+                    statusResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.ERRORED,
                     "Error occurred while processing data from HIP"));
                     updateDataProcessStatus(context, allErrors, status, context.latestResourceDate()).subscribe();
-                    notifyHealthInfoStatus(context, statResponses, SessionStatus.FAILED);
+                    notifyHealthInfoStatus(context, statusResponses, SessionStatus.FAILED);
                 } else {
                     logger.info("Successfully processed data from HIP for transaction id: {}.", context.getTransactionId());
-                    statResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.OK,
+                    statusResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.OK,
                     "Data received successfully"));
                     updateDataProcessStatus(context, "", HealthInfoStatus.SUCCEEDED, context.latestResourceDate()).subscribe();
-                    notifyHealthInfoStatus(context, statResponses, SessionStatus.TRANSFERRED);
+                    notifyHealthInfoStatus(context, statusResponses, SessionStatus.TRANSFERRED);
                 }
             } else {
                 String errorMsg = "Key material not found for transactionId: " + context.getTransactionId();
                 logger.error("Error occurred while processing data from HIP. Transaction id: {}. Error: {}",
                         context.getTransactionId(), errorMsg);
-                List<StatusResponse> statResponses = new ArrayList<>();
-                statResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.ERRORED,
-                    errorMsg));
+                // List<StatusResponse> statResponses = new ArrayList<>();
+                // statResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.ERRORED,
+                    // errorMsg));
                 updateDataProcessStatus(context, errorMsg, HealthInfoStatus.ERRORED, context.latestResourceDate()).subscribe();
-                notifyHealthInfoStatus(context, statResponses, SessionStatus.FAILED);
+                // notifyHealthInfoStatus(context, statResponses, SessionStatus.FAILED);
             }
         } catch (Exception ex) {
             logger.error("Error occurred while processing data from HIP. Transaction id: {}.", context.getTransactionId());
             logger.error(ex.getMessage(), ex);
-            List<StatusResponse> statResponses = new ArrayList<>();
-            statResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.ERRORED,
-                "Error occurred while processing data from HIP"));
+            // List<StatusResponse> statResponses = new ArrayList<>();
+            // statResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.ERRORED,
+            //     "Error occurred while processing data from HIP"));
             updateDataProcessStatus(context, ex.getMessage(), HealthInfoStatus.ERRORED, context.latestResourceDate()).subscribe();
-            notifyHealthInfoStatus(context, statResponses, SessionStatus.FAILED);
+            // notifyHealthInfoStatus(context, statResponses, SessionStatus.FAILED);
         }
     }
 
