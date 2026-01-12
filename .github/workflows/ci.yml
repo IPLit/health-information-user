@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - 'release-*'
+      - trialsv3
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
 jobs:

@@ -266,7 +266,7 @@ public class DataFlowService {
                 "Received data for transaction: %s. Number of entries: %d. Processing data.",
                 context.getTransactionId(), context.getNumberOfEntries()));
             List<String> dataErrors = new ArrayList<>();
-            if (keyMaterial != null && context.getNotifiedData().getEntries()!=null && context.getNotifiedData().getEntries().size() > 0) {
+            if (context.getNotifiedData().getEntries()!=null && context.getNotifiedData().getEntries().size() > 0) {
                 List<Entry> entries = context.getNotifiedData().getEntries();
                 List<StatusResponse> statusResponses = new ArrayList<>();
                 String dataPartNumber = context.getDataPartNumber();
@@ -378,9 +378,9 @@ public class DataFlowService {
                     notifyHealthInfoStatus(context, statusResponses, SessionStatus.TRANSFERRED);
                 }
             } else {
-                String errorMsg = "Key material not found for transactionId: " + context.getTransactionId();
+                String errorMsg = "No entries found in notification request for transactionId: " + context.getTransactionId();
                 logger.error("Error occurred while processing data from HIP. Transaction id: {}. Error: {}",
-                        context.getTransactionId(), errorMsg);
+                        context.getTransactionId(), "No entries found in notification request");
                 // List<StatusResponse> statResponses = new ArrayList<>();
                 // statResponses.add(getStatusResponse(context.getNotifiedData().getEntries().get(0), HiStatus.ERRORED,
                     // errorMsg));
