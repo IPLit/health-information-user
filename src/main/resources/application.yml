@@ -25,7 +25,7 @@ hiu:
     schema: ${CONSENT_MANAGER_DB_NAME}
     user: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
-    poolSize: ${DB_CONNECTION_POOL_SIZE}
+    poolSize: ${DB_CONNECTION_POOL_SIZE:50}
     replica-read-enabled: {REPLICA_READ_ENABLED:false}
     replica:
       host: ${REPLICA_POSTGRES_HOST}
