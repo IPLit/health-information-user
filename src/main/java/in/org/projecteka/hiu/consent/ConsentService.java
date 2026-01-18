@@ -112,8 +112,11 @@ public class ConsentService {
             Requester requester,
             ConsentRequestData hiRequest,
             UUID gatewayRequestId) {
-
-        var reqInfo = hiRequest.getConsent().to(requester, hiuProperties.getId(), conceptValidator);
+        // Extract HIU ID and name from Consent.hipId if available, otherwise use hiuProperties
+        var consentHipId = hiRequest.getConsent().getHipId();
+        var hiuId = (consentHipId != null && !consentHipId.isEmpty()) ? consentHipId : hiuProperties.getId();
+        var hiuName = (consentHipId != null && !consentHipId.isEmpty()) ? consentHipId : hiuProperties.getName();
+        var reqInfo = hiRequest.getConsent().to(requester.getName(), hiuId, hiuName, conceptValidator);
         var patientId = hiRequest.getConsent().getPatient().getId();
         var consentRequest = ConsentRequest.builder()
                 .consent(reqInfo)

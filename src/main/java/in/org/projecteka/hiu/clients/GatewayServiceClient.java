@@ -53,7 +53,7 @@ public class GatewayServiceClient {
                         .uri(GATEWAY_PATH_CONSENT_REQUESTS_INIT)
                         .header(AUTHORIZATION, token)
                         .header(X_CM_ID, cmSuffix)
-                        .header(X_HIU_ID, hiuProperties.getId())
+                        .header(X_HIU_ID, request.getConsent().getHipId()) // hiuProperties.getId()
                         .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
                         .header(REQUEST_ID, requestId)
                         .header(TIMESTAMP, Utils.getISOTimestamp())
