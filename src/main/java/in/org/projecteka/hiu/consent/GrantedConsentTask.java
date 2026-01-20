@@ -6,7 +6,6 @@ import in.org.projecteka.hiu.common.cache.CacheAdapter;
 import in.org.projecteka.hiu.consent.model.ConsentArtefactReference;
 import in.org.projecteka.hiu.consent.model.ConsentArtefactRequest;
 import in.org.projecteka.hiu.consent.model.ConsentNotification;
-import javafx.util.Pair;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +13,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import org.springframework.data.util.Pair;
 
 import static in.org.projecteka.hiu.common.Constants.getCmSuffix;
 import static reactor.core.publisher.Flux.fromIterable;
@@ -57,11 +58,16 @@ public class GrantedConsentTask extends ConsentTask {
                         .thenReturn(consentRequest))
                 //.flatMap(consentRequest -> consentRepository.updateConsentRequestStatus(GRANTED,
                 //        consentRequestId).thenReturn(consentRequest))
-                .map(consentRequest -> getCmSuffix(consentRequest.getPatient().getId()))
-                .flatMap(cmSuffix -> gatewayClient.sendConsentOnNotify(cmSuffix, buildConsentOnNotifyRequestForReference(consentNotification.getConsentArtefacts(), requestID))
-                        .thenReturn(cmSuffix))
-                .flatMapMany(cmSuffix -> fromIterable(consentNotification.getConsentArtefacts())
-                        .flatMap(reference -> perform(reference, consentRequestId, cmSuffix, consentRequest.getHip().getId())))
+                .map(consentRequest -> {
+                    var cmSuffix = getCmSuffix(consentRequest.getPatient().getId());
+                    var hiuId = consentRequest.getHip().getId();
+                    return Pair.of(cmSuffix, hiuId);
+                })
+                .flatMap(pair -> gatewayClient.sendConsentOnNotify(pair.getFirst(), buildConsentOnNotifyRequestForReference(consentNotification.getConsentArtefacts(), 
+                requestID), pair.getSecond())
+                        .thenReturn(pair))
+                .flatMapMany(pair -> fromIterable(consentNotification.getConsentArtefacts())
+                        .flatMap(reference -> perform(reference, consentRequestId, pair.getFirst(), pair.getSecond())))
                 .ignoreElements();
     }
 
