@@ -53,7 +53,7 @@ public class GatewayServiceClient {
                         .uri(GATEWAY_PATH_CONSENT_REQUESTS_INIT)
                         .header(AUTHORIZATION, token)
                         .header(X_CM_ID, cmSuffix)
-                        .header(X_HIU_ID, request.getConsent().getHipId()) // hiuProperties.getId()
+                        .header(X_HIU_ID, request.getHip().getId()) // hiuProperties.getId()
                         .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
                         .header(REQUEST_ID, requestId)
                         .header(TIMESTAMP, Utils.getISOTimestamp())
@@ -68,7 +68,7 @@ public class GatewayServiceClient {
                 .then();
     }
 
-    public Mono<Void> requestConsentArtefact(ConsentArtefactRequest request, String cmSuffix, UUID requestId) {
+    public Mono<Void> requestConsentArtefact(ConsentArtefactRequest request, String cmSuffix, UUID requestId, String hipId) {
         return gateway.token()
                 .flatMap(token -> webClient
                         .post()
@@ -78,7 +78,7 @@ public class GatewayServiceClient {
                         .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
                         .header(REQUEST_ID, requestId.toString())
                         .header(TIMESTAMP, Utils.getISOTimestamp())
-                        .header(X_HIU_ID, hiuProperties.getId())
+                        .header(X_HIU_ID, hipId) // hiuProperties.getId()
                         .body(just(request), ConsentArtefactRequest.class)
                         .retrieve()
                         .onStatus(not(HttpStatus::is2xxSuccessful), clientResponse -> error(creationFailed()))
@@ -87,14 +87,14 @@ public class GatewayServiceClient {
                 .then();
     }
 
-    public Mono<Void> sendConsentOnNotify(String cmSuffix, ConsentOnNotifyRequest request) {
+    public Mono<Void> sendConsentOnNotify(String cmSuffix, ConsentOnNotifyRequest request, String hiuId) {
         return gateway.token()
                 .flatMap(token -> webClient
                         .post()
                         .uri(GATEWAY_PATH_CONSENT_ON_NOTIFY)
                         .header(AUTHORIZATION, token)
                         .header(X_CM_ID, cmSuffix)
-                        .header(X_HIU_ID, hiuProperties.getId())
+                        .header(X_HIU_ID, hiuId) // hiuProperties.getId()
                         .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
                         .header(REQUEST_ID, UUID.randomUUID().toString())
                         .header(TIMESTAMP, Utils.getISOTimestamp())

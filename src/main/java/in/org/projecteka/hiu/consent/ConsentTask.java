@@ -67,4 +67,12 @@ public abstract class ConsentTask {
         ConsentArtefact consentArtefact = consentArtefacts.get(0);
         return getCmSuffix(consentArtefact.getPatient().getId());
     }
+
+    public String getHiuIdFromArtefact(List<ConsentArtefact> consentArtefacts) {
+        if(consentArtefacts.isEmpty()){
+            throw new RuntimeException("Consent artefacts are empty. Unable to get Hiu Id.");
+        }
+        ConsentArtefact consentArtefact = consentArtefacts.get(0);
+        return consentArtefact.getHiu().getId();
+    }
 }

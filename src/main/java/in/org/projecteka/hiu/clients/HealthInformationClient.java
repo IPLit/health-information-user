@@ -63,7 +63,7 @@ public class HealthInformationClient {
                 .uri(gatewayProperties.getBaseUrl() + Constants.GATEWAY_PATH_HEALTH_INFORMATION_NOTIFY)
                 .header(AUTHORIZATION, token)
                 .header(X_CM_ID, consentManagerId)
-                .header(X_HIU_ID, hiuProperties.getId())
+                .header(X_HIU_ID, notificationRequest.getNotification().getNotifier().getId()) // hiuProperties.getId()
                 .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
                 .header(REQUEST_ID, UUID.randomUUID().toString())
                 .header(TIMESTAMP, Utils.getISOTimestamp())

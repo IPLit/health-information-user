@@ -112,7 +112,7 @@ public class ConsentService {
             Requester requester,
             ConsentRequestData hiRequest,
             UUID gatewayRequestId) {
-        // Extract HIU ID and name from Consent.hipId if available, otherwise use hiuProperties
+        // Extract HIU ID and name from ConsentRequestData.hipId, fallback to hiuProperties
         var consentHipId = hiRequest.getConsent().getHipId();
         var hiuId = (consentHipId != null && !consentHipId.isEmpty()) ? consentHipId : hiuProperties.getId();
         var hiuName = (consentHipId != null && !consentHipId.isEmpty()) ? consentHipId : hiuProperties.getName();

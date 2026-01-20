@@ -234,7 +234,7 @@ class DataFlowUserJourneyTest {
         var errorResponseJson = new ObjectMapper().writeValueAsString(errorResponse);
         when(consentRepository.getConsentDetails(consentRequestId)).thenReturn(Flux.fromIterable(consentDetails));
         when(dataFlowRepository.getTransactionId(consentId)).thenReturn(Mono.just(transactionId));
-        when(gatewayServiceClient.sendConsentOnNotify(any(), any())).thenReturn(Mono.empty());
+        when(gatewayServiceClient.sendConsentOnNotify(any(), any(), any())).thenReturn(Mono.empty());
         webTestClient
                 .get()
                 .uri(uriBuilder -> uriBuilder.path("/health-information/fetch/consentRequestId")

@@ -42,7 +42,7 @@ public class DataFlowClient {
                 .header(CORRELATION_ID, correlationId)
                 .header(REQUEST_ID, requestId)
                 .header(TIMESTAMP, Utils.getISOTimestamp())
-                .header(X_HIU_ID, hiuProperties.getId())
+                .header(X_HIU_ID, dataFlowRequest.getHiRequest().getConsent().getHipId()) // hiuProperties.getId()
                 .body(Mono.just(dataFlowRequest), GatewayDataFlowRequest.class)
                 .retrieve()
                 .onStatus(not(HttpStatus::is2xxSuccessful),

@@ -218,7 +218,7 @@ public class HealthDataProcessor {
                         .doneAt(LocalDateTime.now(ZoneOffset.UTC))
                         .notifier(Notifier.builder()
                                 .type(Type.HIU)
-                                .id(hiuProperties.getId())
+                                .id(context.getHipId()) // hiuProperties.getId()
                                 .build())
                         .statusNotification(StatusNotification.builder()
                                 .sessionStatus(sessionStatus)

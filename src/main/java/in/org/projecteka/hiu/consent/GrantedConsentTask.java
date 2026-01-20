@@ -6,6 +6,8 @@ import in.org.projecteka.hiu.common.cache.CacheAdapter;
 import in.org.projecteka.hiu.consent.model.ConsentArtefactReference;
 import in.org.projecteka.hiu.consent.model.ConsentArtefactRequest;
 import in.org.projecteka.hiu.consent.model.ConsentNotification;
+import javafx.util.Pair;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -31,7 +33,7 @@ public class GrantedConsentTask extends ConsentTask {
         this.gatewayResponseCache = gatewayResponseCache;
     }
 
-    private Mono<Void> perform(ConsentArtefactReference reference, String consentRequestId, String cmSuffix) {
+    private Mono<Void> perform(ConsentArtefactReference reference, String consentRequestId, String cmSuffix, String hipId) {
         var requestId = UUID.randomUUID();
         return gatewayResponseCache.put(requestId.toString(), consentRequestId)
                 .then(defer(() -> {
@@ -39,7 +41,7 @@ public class GrantedConsentTask extends ConsentTask {
                             .builder()
                             .consentId(reference.getId())
                             .build();
-                    return gatewayClient.requestConsentArtefact(consentArtefactRequest, cmSuffix, requestId);
+                    return gatewayClient.requestConsentArtefact(consentArtefactRequest, cmSuffix, requestId, hipId);
                 }));
     }
 
@@ -59,7 +61,7 @@ public class GrantedConsentTask extends ConsentTask {
                 .flatMap(cmSuffix -> gatewayClient.sendConsentOnNotify(cmSuffix, buildConsentOnNotifyRequestForReference(consentNotification.getConsentArtefacts(), requestID))
                         .thenReturn(cmSuffix))
                 .flatMapMany(cmSuffix -> fromIterable(consentNotification.getConsentArtefacts())
-                        .flatMap(reference -> perform(reference, consentRequestId, cmSuffix)))
+                        .flatMap(reference -> perform(reference, consentRequestId, cmSuffix, consentRequest.getHip().getId())))
                 .ignoreElements();
     }
 

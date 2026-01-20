@@ -198,10 +198,10 @@ public class PatientConsentService {
             Requester requester,
             ConsentRequestData hiRequest,
             UUID gatewayRequestId) {
-        // Extract HIU ID and name from Consent.hipId if available, otherwise use hiuProperties
+        // Extract HIU ID and name from ConsentRequestData.hipId, fallback to hiuProperties
         var consentHipId = hiRequest.getConsent().getHipId();
         var hiuId = (consentHipId != null && !consentHipId.isEmpty()) ? consentHipId : hiuProperties.getId();
-        var hiuName = (consentHipId != null && !consentHipId.isEmpty()) ? consentHipId : hiuProperties.getName();
+        var hiuName = (consentHipId != null && !consentHipId.isEmpty()) ? consentHipId : hiuProperties.getName();    
         var reqInfo = hiRequest.getConsent().to(requester.getName(), hiuId, hiuName, conceptValidator);
         var encodedSign = patientHIUCertService.signConsentRequest(reqInfo);
         var requesterIdentifier = Identifier.builder().value(encodedSign).build();

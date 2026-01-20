@@ -40,7 +40,8 @@ public class ExpiredConsentTask extends ConsentTask {
         return validateConsents(consentNotification.getConsentArtefacts())
                 .flatMap(consentArtefacts -> {
                     var cmSuffix = getCmSuffixFromArtefact(consentArtefacts);
-                    return gatewayServiceClient.sendConsentOnNotify(cmSuffix, buildConsentOnNotifyRequest(consentArtefacts, requestID));
+                    var hiuId = getHiuIdFromArtefact(consentArtefacts);
+                    return gatewayServiceClient.sendConsentOnNotify(cmSuffix, buildConsentOnNotifyRequest(consentArtefacts, requestID), hiuId);
                 })
                 .then(Mono.defer(() -> Flux.fromIterable(consentNotification.getConsentArtefacts())
                         .flatMap(reference -> processArtefactReference(reference,
