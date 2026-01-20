@@ -29,7 +29,8 @@ public class DataFlowClient {
     private final HiuProperties hiuProperties;
     private static final Logger logger = getLogger(DataFlowClient.class);
 
-    public Mono<Void> initiateDataFlowRequest(GatewayDataFlowRequest dataFlowRequest, String token, String cmSuffix, String requestId) {
+    public Mono<Void> initiateDataFlowRequest(GatewayDataFlowRequest dataFlowRequest, String token,
+        String cmSuffix, String requestId, String hiuId) {
         String correlationId = MDC.get(CORRELATION_ID);
         if (StringUtils.isBlank(correlationId)) {
             correlationId = UUID.randomUUID().toString();
@@ -42,7 +43,7 @@ public class DataFlowClient {
                 .header(CORRELATION_ID, correlationId)
                 .header(REQUEST_ID, requestId)
                 .header(TIMESTAMP, Utils.getISOTimestamp())
-                .header(X_HIU_ID, dataFlowRequest.getHiRequest().getConsent().getHipId()) // hiuProperties.getId()
+                .header(X_HIU_ID, hiuId) // hiuProperties.getId()
                 .body(Mono.just(dataFlowRequest), GatewayDataFlowRequest.class)
                 .retrieve()
                 .onStatus(not(HttpStatus::is2xxSuccessful),

@@ -47,13 +47,14 @@ public class GatewayServiceClient {
     }
 
     public Mono<Void> sendConsentRequest(String cmSuffix, ConsentRequest request, String requestId) {
+        String hiuId = request.getConsent().getHip().getId();
         return gateway.token()
                 .flatMap(token -> webClient
                         .post()
                         .uri(GATEWAY_PATH_CONSENT_REQUESTS_INIT)
                         .header(AUTHORIZATION, token)
                         .header(X_CM_ID, cmSuffix)
-                        .header(X_HIU_ID, request.getHip().getId()) // hiuProperties.getId()
+                        .header(X_HIU_ID, hiuId) // hiuProperties.getId()
                         .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
                         .header(REQUEST_ID, requestId)
                         .header(TIMESTAMP, Utils.getISOTimestamp())

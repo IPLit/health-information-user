@@ -74,7 +74,7 @@ public class DataFlowClientTest {
                 .setResponseCode(202));
         when(gatewayProperties.getBaseUrl()).thenReturn(mockWebServer.url("").toString());
 
-        StepVerifier.create(dataFlowClient.initiateDataFlowRequest(gatewayDataFlowRequest, string(), string(),UUID.randomUUID().toString()))
+        StepVerifier.create(dataFlowClient.initiateDataFlowRequest(gatewayDataFlowRequest, string(), string(),UUID.randomUUID().toString(),string()))
                 .verifyComplete();
 
         RecordedRequest recordedRequest = mockWebServer.takeRequest();
