@@ -30,7 +30,7 @@ config:
   POSTGRES_HOST: bahmni-dev-postgresql
   POSTGRES_PORT: 5432
   CONSENT_MANAGER_DB_NAME: "health_information_user"
-  DB_CONNECTION_POOL_SIZE: 50
+  DB_CONNECTION_POOL_SIZE: 20
   OFFSET_IN_DAYS: 2
   USING_GATEWAY: true
   GATEWAY_BASE_URL: "https://dev.abdm.gov.in"
