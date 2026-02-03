@@ -47,12 +47,12 @@ public class GatewayServiceClient {
     }
 
     public Mono<Void> sendConsentRequest(String cmSuffix, ConsentRequest request, String requestId) {
-        return gateway.token()
-                .flatMap(token -> webClient
-                        .post()
-                        .uri(GATEWAY_PATH_CONSENT_REQUESTS_INIT)
-                        .header(AUTHORIZATION, token)
-                        .header(X_CM_ID, cmSuffix)
+        var patToken = gateway.token().block();
+        return webClient
+                .post()
+                .uri(GATEWAY_PATH_CONSENT_REQUESTS_INIT)
+                .header(AUTHORIZATION, patToken)
+                .header(X_CM_ID, cmSuffix)
                         .header(X_HIU_ID, hiuProperties.getId())
                         .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
                         .header(REQUEST_ID, requestId)
@@ -64,16 +64,16 @@ public class GatewayServiceClient {
                                         .doOnNext(logger::error)
                                         .then(error(creationFailed())))
                         .toBodilessEntity()
-                        .timeout(ofMillis(gatewayProperties.getRequestTimeout())))
+                        .timeout(ofMillis(gatewayProperties.getRequestTimeout()))
                 .then();
     }
 
     public Mono<Void> requestConsentArtefact(ConsentArtefactRequest request, String cmSuffix, UUID requestId) {
-        return gateway.token()
-                .flatMap(token -> webClient
-                        .post()
-                        .uri(GATEWAY_PATH_CONSENT_ARTEFACT_FETCH)
-                        .header(AUTHORIZATION, token)
+        var patToken = gateway.token().block();
+        return webClient
+                .post()
+                .uri(GATEWAY_PATH_CONSENT_ARTEFACT_FETCH)
+                .header(AUTHORIZATION, patToken)
                         .header(X_CM_ID, cmSuffix)
                         .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
                         .header(REQUEST_ID, requestId.toString())
@@ -83,16 +83,16 @@ public class GatewayServiceClient {
                         .retrieve()
                         .onStatus(not(HttpStatus::is2xxSuccessful), clientResponse -> error(creationFailed()))
                         .toBodilessEntity()
-                        .timeout(ofMillis(gatewayProperties.getRequestTimeout())))
+                        .timeout(ofMillis(gatewayProperties.getRequestTimeout()))
                 .then();
     }
 
     public Mono<Void> sendConsentOnNotify(String cmSuffix, ConsentOnNotifyRequest request) {
-        return gateway.token()
-                .flatMap(token -> webClient
-                        .post()
-                        .uri(GATEWAY_PATH_CONSENT_ON_NOTIFY)
-                        .header(AUTHORIZATION, token)
+        var patToken = gateway.token().block();
+        return webClient
+                .post()
+                .uri(GATEWAY_PATH_CONSENT_ON_NOTIFY)
+                .header(AUTHORIZATION, patToken)
                         .header(X_CM_ID, cmSuffix)
                         .header(X_HIU_ID, hiuProperties.getId())
                         .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
@@ -105,16 +105,16 @@ public class GatewayServiceClient {
                                         .doOnNext(logger::error)
                                         .then(error(creationFailed())))
                         .toBodilessEntity()
-                        .timeout(ofMillis(gatewayProperties.getRequestTimeout())))
+                        .timeout(ofMillis(gatewayProperties.getRequestTimeout()))
                 .then();
     }
 
     public Mono<Void> sendPatientStatusOnNotify(String cmSuffix, PatientStatusNotification request) {
-        return gateway.token()
-                .flatMap(token -> webClient
-                        .post()
-                        .uri(PATH_PATIENT_STATUS_ON_NOTIFY)
-                        .header(AUTHORIZATION, token)
+        var patToken = gateway.token().block();
+        return webClient
+                .post()
+                .uri(PATH_PATIENT_STATUS_ON_NOTIFY)
+                .header(AUTHORIZATION, patToken)
                         .header(X_CM_ID, cmSuffix)
                         .header(X_HIU_ID, hiuProperties.getId())
                         .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
@@ -125,7 +125,7 @@ public class GatewayServiceClient {
                                         .doOnNext(logger::error)
                                         .then(error(creationFailed())))
                         .toBodilessEntity()
-                        .timeout(ofMillis(gatewayProperties.getRequestTimeout())))
+                        .timeout(ofMillis(gatewayProperties.getRequestTimeout()))
                 .then();
     }
 }

@@ -41,11 +41,11 @@ public class AbhaAddressServiceClient {
     }
 
     public Mono<AbhaAddressSearchResponse> findPatientWith(FindPatientRequest request, String cmSuffix) {
-        return gateway.token()
-                .flatMap(token -> webClient.
-                        post()
-                        .uri(PATH_ABHA_ADDRESS_SEARCH)
-                        .header(AUTHORIZATION, token)
+        var patToken = gateway.token().block();
+        return webClient
+                .post()
+                .uri(PATH_ABHA_ADDRESS_SEARCH)
+                .header(AUTHORIZATION, patToken)
                         .header(REQUEST_ID, UUID.randomUUID().toString())
                         .header(TIMESTAMP, Utils.getISOTimestamp())
                         .body(just(request), FindPatientRequest.class)
@@ -53,7 +53,7 @@ public class AbhaAddressServiceClient {
                         .onStatus(httpStatus -> httpStatus == BAD_REQUEST, clientResponse -> error(notFound()))
                         .onStatus(not(HttpStatus::is2xxSuccessful), clientResponse -> error(unknown()))
                         .bodyToMono(AbhaAddressSearchResponse.class)
-                        .timeout(ofMillis(gatewayProperties.getRequestTimeout())));
+                        .timeout(ofMillis(gatewayProperties.getRequestTimeout()));
     }
 
 }
