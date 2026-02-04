@@ -84,7 +84,12 @@ public class HealthInfoManager {
     }
 
     private boolean isValidRequester(List<DataPartDetail> dataParts, String requesterId) {
-        return dataParts.stream().allMatch(dataPart -> dataPart.getRequester().equals(requesterId));
+        if (requesterId == null || requesterId.isBlank()) {
+            return false;
+        }
+        return dataParts.stream().allMatch(dataPart -> {
+            return Objects.equals(dataPart.getRequester(), requesterId);
+        });
     }
 
     private Mono<Tuple2<List<PatientDataEntry>, Integer>> getDataEntries(int limit,
@@ -245,7 +250,10 @@ public class HealthInfoManager {
     }
 
     private boolean isValidRequester(String requesterId, Map<String, String> consentDetail) {
-        return consentDetail.get("requester").equals(requesterId);
+        if (requesterId == null || requesterId.isBlank()) {
+            return false;
+        }
+        return Objects.equals(consentDetail.get("requester"), requesterId);
     }
 
     private Flux<DataEntry> getDataEntries(String transactionId, String hipId, String hipName) {
