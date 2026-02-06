@@ -27,10 +27,9 @@ public class Gateway {
         return gatewayAuthenticationClient.getTokenFor(gatewayProperties.getClientId(), gatewayProperties.getClientSecret())
                 .filter(tokenVal -> tokenVal != null && tokenVal.getBearerToken() != null && !tokenVal.getBearerToken().isEmpty())
                 .flatMap(tokenVal -> {
-                    logger.info("Gateway access token generated! " + tokenVal.getBearerToken());
+                    logger.debug("Gateway access token generated! " + tokenVal.getBearerToken());
                     return accessTokenCache.put("hiu:gateway:accessToken", tokenVal.getBearerToken())
                             .thenReturn(tokenVal.getBearerToken());
-                })
-                .switchIfEmpty(Mono.just(""));
+                });
     }
 }

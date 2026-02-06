@@ -293,10 +293,10 @@ public class HealthDataProcessor {
             Function<ResourceType, HITypeResourceProcessor> resourceProcessor = this::identifyResourceProcessor;
             BundleContext bundleContext = new BundleContext(bundle, resourceProcessor);
             try {
-                logger.info("Processing bundle id: {}", bundle.getId());
+                logger.debug("Processing bundle id: {}", bundle.getId());
                 bundle.getEntry().forEach(bundleEntry -> {
                     ResourceType resourceType = bundleEntry.getResource().getResourceType();
-                    logger.info("bundle entry resource type:  {}", resourceType);
+                    logger.debug("bundle entry resource type:  {}", resourceType);
                     HITypeResourceProcessor processor = identifyResourceProcessor(resourceType);
                     if (processor != null) {
                         processor.process(bundleEntry.getResource(), context, bundleContext, null);
