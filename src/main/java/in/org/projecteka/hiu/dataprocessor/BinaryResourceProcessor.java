@@ -38,12 +38,18 @@ public class BinaryResourceProcessor implements HITypeResourceProcessor {
         byte[] data = Base64.getDecoder().decode(binaryResource.getContentAsBase64());
         String randomFileName = UUID.randomUUID().toString() + getFileExtension(binaryResource.getContentType());
         Path localPath = Paths.get(localStoragePath.toString(), randomFileName);
-        try (FileChannel channel = (FileChannel) Files.newByteChannel(localPath,
+        try {
+            Path parent = localPath.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            try (FileChannel channel = (FileChannel) Files.newByteChannel(localPath,
                 StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
             ByteBuffer buffer = ByteBuffer.allocate(data.length);
             buffer.put(data);
             buffer.flip();
             channel.write(buffer);
+            }
         } catch (IOException ex) {
             logger.error(ex.getMessage(), ex);
             throw new RuntimeException(ex);

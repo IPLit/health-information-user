@@ -173,8 +173,8 @@ public class DataFlowService {
         return String.format("%s_%d.json", TokenUtils.encode(transactionId), dataFlowPartNo);
     }
 
-    private String getLocalDirectoryName(String consentRequestId) {
-        return String.format("%s", TokenUtils.encode(consentRequestId));
+    private String getLocalDirectoryName(String pathString) {
+        return String.format("%s", TokenUtils.encode(pathString));
     }
 
     private Mono<String> validateAndRetrieveRequestedConsent(String transactionId) {

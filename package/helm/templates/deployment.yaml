@@ -64,7 +64,7 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            - mountPath: /tmp/
+            - mountPath: /tmpHiuData/
               name: consent-data-store
       restartPolicy: Always
       volumes:
