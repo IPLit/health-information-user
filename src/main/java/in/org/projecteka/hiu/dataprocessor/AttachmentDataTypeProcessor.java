@@ -50,7 +50,7 @@ public class AttachmentDataTypeProcessor {
 
     private Path saveAttachmentAsFile(Attachment attachment, Path localStorePath) throws RuntimeException {
         if (attachment.getData() != null) {
-            byte[] data = Base64.getDecoder().decode(attachment.getDataElement().getValueAsString());
+            byte[] data = Base64.getDecoder().decode(attachment.getDataElement().getValueAsString().getBytes());
             Path attachmentFilePath = getFileAttachmentPath(attachment, localStorePath);
             try {
                 Path parent = attachmentFilePath.getParent();
@@ -58,7 +58,7 @@ public class AttachmentDataTypeProcessor {
                     Files.createDirectories(parent);
                 }
                 try (FileChannel channel = (FileChannel) Files.newByteChannel(attachmentFilePath,
-                        StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+                        StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
                 ByteBuffer buffer = ByteBuffer.allocate(data.length);
                 buffer.put(data);
                 buffer.flip();

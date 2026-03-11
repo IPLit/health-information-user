@@ -2,6 +2,7 @@ package in.org.projecteka.hiu;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.Value;
 
 import java.util.Optional;
@@ -9,6 +10,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @Value
 @Builder
+@Getter
 public class Caller {
     String username;
     Boolean isServiceAccount;

@@ -1,6 +1,7 @@
 package in.org.projecteka.hiu.dataflow;
 
 import in.org.projecteka.hiu.common.Utils;
+import static in.org.projecteka.hiu.common.Constants.TIMESTAMP_PATTERN;
 import in.org.projecteka.hiu.consent.ConsentRepository;
 import in.org.projecteka.hiu.consent.PatientConsentRepository;
 import in.org.projecteka.hiu.consent.model.ConsentStatus;
@@ -22,6 +23,7 @@ import reactor.util.function.Tuple2;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -241,8 +243,8 @@ public class HealthInfoManager {
     }
 
     private boolean isConsentNotExpired(Map<String, String> consentDetail) {
-        var consentExpiryDate = Utils.parseTimeStamp(consentDetail.get("consentExpiryDate"));
-        return consentExpiryDate.isAfter(ZonedDateTime.now(Utils.zOffset).toLocalDateTime());
+        var consentExpiryDate = LocalDateTime.parse(consentDetail.get("consentExpiryDate"), DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN));
+        return LocalDateTime.now(Utils.zOffset).isBefore(consentExpiryDate);
     }
 
     private boolean isGrantedConsent(Map<String, String> consentDetail) {

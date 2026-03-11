@@ -44,7 +44,7 @@ public class BinaryResourceProcessor implements HITypeResourceProcessor {
                 Files.createDirectories(parent);
             }
             try (FileChannel channel = (FileChannel) Files.newByteChannel(localPath,
-                StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+                StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
             ByteBuffer buffer = ByteBuffer.allocate(data.length);
             buffer.put(data);
             buffer.flip();

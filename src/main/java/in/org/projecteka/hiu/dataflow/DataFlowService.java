@@ -43,6 +43,7 @@ import org.hl7.fhir.r4.model.Organization;
 import org.hl7.fhir.r4.model.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.data.util.Pair;
 
 import ca.uhn.fhir.context.FhirContext;
@@ -168,13 +169,13 @@ public class DataFlowService {
         return contentRef;
     }
 
-    private String localFileNameToSave(String transactionId, int dataFlowPartNo) {
+    private String localFileNameToSave(String transactionId, int pageNumber) {
         //TODO: potentially append part (e.g. page number)
-        return String.format("%s_%d.json", TokenUtils.encode(transactionId), dataFlowPartNo);
+        return String.format("%s_%d.json", new TokenUtils().encode(transactionId), pageNumber);
     }
 
     private String getLocalDirectoryName(String pathString) {
-        return String.format("%s", TokenUtils.encode(pathString));
+        return new TokenUtils().encode(pathString);
     }
 
     private Mono<String> validateAndRetrieveRequestedConsent(String transactionId) {
@@ -186,7 +187,7 @@ public class DataFlowService {
     }
 
     private boolean hasConsentArtefactExpired(LocalDateTime dataEraseAt) {
-        return dataEraseAt != null && dataEraseAt.isBefore(LocalDateTime.now(in.org.projecteka.hiu.common.Utils.zOffset));
+        return dataEraseAt != null && dataEraseAt.isAfter(LocalDateTime.now(in.org.projecteka.hiu.common.Utils.zOffset));
     }
 
     private boolean hasContent(Entry entry) {
@@ -220,15 +221,12 @@ public class DataFlowService {
             ));
         }
 
-        String consentRequestId = dataNotificationRequest.getTransactionId();
-        Path dataFilePath = Paths.get(dataFlowServiceProperties.getLocalStoragePath(),
-                getLocalDirectoryName(consentRequestId),
-                getLocalDirectoryName(dataNotificationRequest.getTransactionId()));
-
-        return dataFlowRepository.getConsentId(consentRequestId)
-            .flatMap(consentId ->
-                consentRepository.getHipId(consentId).map(hipId -> Pair.of(consentId, hipId)))
-            .flatMap(pair -> Mono.just(createDataContext(dataNotificationRequest, dataFilePath, pair.getSecond(), pair.getFirst())))
+        String transactionId = dataNotificationRequest.getTransactionId();
+        return dataFlowRepository.getConsentId(transactionId)
+            .flatMap(consentId -> consentRepository.getConsentRequestId(consentId).map(consentRequestId -> Pair.of(consentRequestId, consentId)))
+            .flatMap(pair ->
+                consentRepository.getHipId(pair.getSecond()).map(hipId -> Triple.of(pair.getFirst(), pair.getSecond(), hipId)))
+            .flatMap(triple -> Mono.just(createDataContext(dataNotificationRequest, triple.getRight(), triple.getMiddle(), triple.getLeft())))
             .flatMap(context -> dataFlowRepository.getKeys(context.getTransactionId())
                 .flatMap(keyMaterial -> {
                     if (keyMaterial != null) {
@@ -242,9 +240,12 @@ public class DataFlowService {
             );
     }
 
-    private DataContext createDataContext(DataNotificationRequest dataNotificationRequest, Path dataFilePath, String hipId, String consentId) {
+    private DataContext createDataContext(DataNotificationRequest dataNotificationRequest, String hipId, String consentId, String consentRequestId) {
         try {
-            logger.info("Created context with hipId as {} and data file path {}", hipId, dataFilePath);
+            Path dataFilePath = Paths.get(dataFlowServiceProperties.getLocalStoragePath(),
+                    getLocalDirectoryName(consentRequestId),
+                    getLocalDirectoryName(dataNotificationRequest.getTransactionId()));
+            logger.info("Created context with consentRequestId as {}, hipId as {} and data file path {}", consentRequestId, hipId, dataFilePath);
             return DataContext.builder()
                     .notifiedData(dataNotificationRequest)
                     .dataFilePath(dataFilePath)
