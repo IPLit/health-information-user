@@ -26,7 +26,10 @@ public class DataContext {
     private static final Logger logger = LoggerFactory.getLogger(DataContext.class);
 
     public Path getLocalStoragePath() {
+        if (dataFilePath.endsWith("/")) {
         return dataFilePath.getParent();
+        }
+        return dataFilePath;
     }
 
     public String getTransactionId() {

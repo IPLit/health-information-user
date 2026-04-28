@@ -1,6 +1,7 @@
 package in.org.projecteka.hiu.common;
 
 import in.org.projecteka.hiu.GatewayProperties;
+import in.org.projecteka.hiu.clients.Token;
 import in.org.projecteka.hiu.clients.GatewayAuthenticationClient;
 import in.org.projecteka.hiu.common.cache.CacheAdapter;
 import lombok.AllArgsConstructor;
@@ -14,19 +15,21 @@ public class Gateway {
 
     private final GatewayProperties gatewayProperties;
     private final GatewayAuthenticationClient gatewayAuthenticationClient;
-    private final CacheAdapter<String, String> accessTokenCache;
+    private CacheAdapter<String, String> accessTokenCache;
 
     public Mono<String> token() {
         return accessTokenCache.get("hiu:gateway:accessToken")
-                .switchIfEmpty(Mono.defer(this::tokenUsingSecret))
-                .doOnError(logger::error)
-                .map(token -> token);
+                .switchIfEmpty(tokenUsingSecret())
+                .doOnError(error -> logger.error("Error getting token from cache or secret "));
     }
 
     private Mono<String> tokenUsingSecret() {
         return gatewayAuthenticationClient.getTokenFor(gatewayProperties.getClientId(), gatewayProperties.getClientSecret())
-                .flatMap(token ->
-                        accessTokenCache.put("hiu:gateway:accessToken", token.getBearerToken())
-                                .thenReturn(token.getBearerToken()));
+                .filter(tokenVal -> tokenVal != null && tokenVal.getBearerToken() != null && !tokenVal.getBearerToken().isEmpty())
+                .flatMap(tokenVal -> {
+                    logger.debug("Gateway access token generated! " + tokenVal.getBearerToken());
+                    return accessTokenCache.put("hiu:gateway:accessToken", tokenVal.getBearerToken())
+                            .thenReturn(tokenVal.getBearerToken());
+                });
     }
 }

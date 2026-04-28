@@ -82,7 +82,7 @@ public class DataFlowDeleteListener {
 
     @SneakyThrows
     private String getLocalDirectoryName(String directoryName) {
-        return String.format("%s", TokenUtils.encode(directoryName));
+        return String.format("%s", new TokenUtils().encode(directoryName));
     }
 
     @SneakyThrows

@@ -26,11 +26,11 @@ config:
   CONSENT_MANAGEMENT_URL: "https://dev.ndhm.gov.in/cm"
   DEFAULT_PAGE_SIZE: 20
   MAX_PAGE_SIZE: 100
-  LOCAL_STORAGE_PATH: "/tmp/"
+  LOCAL_STORAGE_PATH: "/tmpHiuData/"
   POSTGRES_HOST: bahmni-dev-postgresql
   POSTGRES_PORT: 5432
   CONSENT_MANAGER_DB_NAME: "health_information_user"
-  DB_CONNECTION_POOL_SIZE: 50
+  DB_CONNECTION_POOL_SIZE: 15
   OFFSET_IN_DAYS: 2
   USING_GATEWAY: true
   GATEWAY_BASE_URL: "https://dev.abdm.gov.in"

@@ -111,8 +111,7 @@ public class GatewayServiceClient {
     }
 
     public Mono<Void> sendPatientStatusOnNotify(String cmSuffix, PatientStatusNotification request) {
-        return gateway.token()
-                .flatMap(token -> webClient
+        return gateway.token().flatMap(token -> webClient
                         .post()
                         .uri(PATH_PATIENT_STATUS_ON_NOTIFY)
                         .header(AUTHORIZATION, token)

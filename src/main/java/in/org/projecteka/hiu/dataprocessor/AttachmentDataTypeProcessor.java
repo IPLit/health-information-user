@@ -50,14 +50,20 @@ public class AttachmentDataTypeProcessor {
 
     private Path saveAttachmentAsFile(Attachment attachment, Path localStorePath) throws RuntimeException {
         if (attachment.getData() != null) {
-            byte[] data = Base64.getDecoder().decode(attachment.getDataElement().getValueAsString());
+            byte[] data = Base64.getDecoder().decode(attachment.getDataElement().getValueAsString().getBytes());
             Path attachmentFilePath = getFileAttachmentPath(attachment, localStorePath);
+            try {
+                Path parent = attachmentFilePath.getParent();
+                if (parent != null) {
+                    Files.createDirectories(parent);
+                }
             try (FileChannel channel = (FileChannel) Files.newByteChannel(attachmentFilePath,
-                    StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+                        StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
                 ByteBuffer buffer = ByteBuffer.allocate(data.length);
                 buffer.put(data);
                 buffer.flip();
                 channel.write(buffer);
+                }
             } catch (IOException ex) {
                 logger.error(ex.getMessage(), ex);
                 throw new RuntimeException(ex);
@@ -72,6 +78,15 @@ public class AttachmentDataTypeProcessor {
 
     private Path downloadAndSaveFile(Attachment attachment, Path localStorePath) {
         Path attachmentFilePath = getFileAttachmentPath(attachment, localStorePath);
+        try {
+            Path parent = attachmentFilePath.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
         HttpGet request = new HttpGet(URI.create(attachment.getUrl()));
         try (CloseableHttpClient client = HttpClientBuilder.create().build();
              CloseableHttpResponse response = client.execute(request)) {

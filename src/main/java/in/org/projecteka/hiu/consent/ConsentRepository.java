@@ -55,6 +55,8 @@ public class ConsentRepository {
      * TODO: Should be refactored.
      * See notes in {@link #get(String)}
      */
+    private static final String SELECT_CONSENT_REQUEST_ID_QUERY = "SELECT consent_request_id " +
+            "FROM consent_artefact WHERE consent_artefact_id = $1";
     private static final String SELECT_CONSENT_REQUEST_QUERY = "SELECT consent_request " +
             "FROM consent_request WHERE consent_request_id = $1";
     private static final String SELECT_CONSENT_ARTEFACT_QUERY = "SELECT consent_artefact FROM consent_artefact WHERE " +
@@ -428,6 +430,20 @@ public class ConsentRepository {
                         }
                         monoSink.success();
                     }));
+    }
+
+    public Mono<String> getConsentRequestId(String consentArtefactId) {
+        return Mono.create(monoSink -> readOnlyClient.preparedQuery(SELECT_CONSENT_REQUEST_ID_QUERY)
+                .execute(Tuple.of(consentArtefactId),
+                        handler -> {
+                            if (handler.failed()) {
+                                logger.error(handler.cause().getMessage(), handler.cause());
+                                monoSink.error(new Exception("Failed to get consent artefact id from consent request " +
+                                        "id"));
+                                return;
+                            }
+                            monoSink.success(handler.result().iterator().next().getString(0));
+                        }));
     }
 
 }

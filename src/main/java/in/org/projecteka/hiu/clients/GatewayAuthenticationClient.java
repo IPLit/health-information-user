@@ -60,7 +60,13 @@ public class GatewayAuthenticationClient {
                         .doOnNext(logger::error)
                         .thenReturn(ClientError.authenticationFailed()))
                 .bodyToMono(Properties.class)
-                .map(properties -> new Token(format("Bearer %s", properties.getProperty("accessToken"))));
+                .map(properties -> {
+                    String accessToken = properties.getProperty("accessToken");
+                    if (accessToken != null && !accessToken.isEmpty()) {
+                        return new Token(format("Bearer %s", accessToken));
+                    }
+                    return null;
+                });
     }
 
     private SessionRequest requestWith(String clientId, String clientSecret) {

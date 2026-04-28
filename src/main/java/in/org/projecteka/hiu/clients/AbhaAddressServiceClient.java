@@ -42,8 +42,8 @@ public class AbhaAddressServiceClient {
 
     public Mono<AbhaAddressSearchResponse> findPatientWith(FindPatientRequest request, String cmSuffix) {
         return gateway.token()
-                .flatMap(token -> webClient.
-                        post()
+                .flatMap(token -> webClient
+                        .post()
                         .uri(PATH_ABHA_ADDRESS_SEARCH)
                         .header(AUTHORIZATION, token)
                         .header(REQUEST_ID, UUID.randomUUID().toString())

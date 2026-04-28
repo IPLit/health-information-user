@@ -31,6 +31,9 @@ public class ClientError extends Throwable {
     private final ErrorRepresentation error;
 
     public ClientError(HttpStatus httpStatus, ErrorRepresentation errorRepresentation) {
+        super(errorRepresentation != null && errorRepresentation.getError() != null
+                ? errorRepresentation.getError().getMessage()
+                : "Client error");
         this.httpStatus = httpStatus;
         error = errorRepresentation;
     }
