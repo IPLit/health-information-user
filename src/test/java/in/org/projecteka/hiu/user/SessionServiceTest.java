@@ -69,7 +69,7 @@ class SessionServiceTest {
     @Test
     void returnErrorWhenPasswordDoesNotMatch() {
         var session = sessionRequest().build();
-        String userName = new String(Base64.getDecoder().decode(session.getUsername()));
+        String userName = session.getUsername();
         String userPassword = session.getPassword();
         var user = user().username(userName).build();
         when(userRepository.with(userName)).thenReturn(Mono.just(user));
