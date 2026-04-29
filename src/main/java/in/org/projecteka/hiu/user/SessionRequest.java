@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class SessionRequest {
     public String username;
     public String password;
+    public String loginLocationUuid;
 }

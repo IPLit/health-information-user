@@ -26,6 +26,9 @@ class SessionServiceTest {
     @Mock
     BCryptPasswordEncoder passwordEncoder;
 
+    @Mock
+    LoginLocationMetadataService loginLocationMetadataService;
+
     @BeforeEach
     void init() {
         initMocks(this);
@@ -46,7 +49,7 @@ class SessionServiceTest {
         var user = user().username(userName).build();
         when(userRepository.with(userName)).thenReturn(Mono.just(user));
         when(passwordEncoder.matches(userPassword, user.getPassword())).thenReturn(true);
-        var sessionService = new SessionService(userRepository, passwordEncoder, new JWTGenerator(sharedSecret()));
+        var sessionService = new SessionService(userRepository, passwordEncoder, new JWTGenerator(sharedSecret()), loginLocationMetadataService);
 
         Mono<Session> sessionPublisher = sessionService.forNew(session);
 
@@ -57,7 +60,7 @@ class SessionServiceTest {
 
     @Test
     void returnErrorWhenSessionRequestIsNull() {
-        var sessionService = new SessionService(userRepository, passwordEncoder, new JWTGenerator(sharedSecret()));
+        var sessionService = new SessionService(userRepository, passwordEncoder, new JWTGenerator(sharedSecret()), loginLocationMetadataService);
 
         Mono<Session> sessionPublisher = sessionService.forNew(null);
 
@@ -74,7 +77,7 @@ class SessionServiceTest {
         var user = user().username(userName).build();
         when(userRepository.with(userName)).thenReturn(Mono.just(user));
         when(passwordEncoder.matches(userPassword, user.getPassword())).thenReturn(false);
-        var sessionService = new SessionService(userRepository, passwordEncoder, new JWTGenerator(sharedSecret()));
+        var sessionService = new SessionService(userRepository, passwordEncoder, new JWTGenerator(sharedSecret()), loginLocationMetadataService);
 
         Mono<Session> sessionPublisher = sessionService.forNew(null);
 

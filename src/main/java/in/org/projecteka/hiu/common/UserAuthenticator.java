@@ -40,7 +40,14 @@ public class UserAuthenticator implements Authenticator {
             }
             var jsonObject = jwsObject.getPayload().toJSONObject();
             var isVerified = Boolean.parseBoolean(jsonObject.getAsString("isVerified"));
-            return Mono.just(new Caller(jsonObject.getAsString("username"), false, jsonObject.getAsString("role"), isVerified));
+            return Mono.just(new Caller(
+                    jsonObject.getAsString("username"),
+                    false,
+                    jsonObject.getAsString("role"),
+                    isVerified,
+                    jsonObject.getAsString("visitLocationUuid"),
+                    jsonObject.getAsString("abdmHfrId"),
+                    jsonObject.getAsString("abdmHfrName")));
         } catch (ParseException | JOSEException e) {
             logger.error(format("Unauthorized user access with token: %s %s", token, e));
         }

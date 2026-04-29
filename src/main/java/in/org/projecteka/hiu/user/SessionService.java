@@ -11,6 +11,7 @@ import java.util.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import reactor.core.publisher.Mono;
 
@@ -20,17 +21,27 @@ public class SessionService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JWTGenerator jwtGenerator;
+    private final LoginLocationMetadataService loginLocationMetadataService;
     private final Logger logger = LogManager.getLogger(SessionService.class);
 
     public Mono<Session> forNew(SessionRequest sessionRequest) {
         return Mono.justOrEmpty(sessionRequest)
                 .flatMap(request -> userRepository.with(new String(Base64.getDecoder().decode(request.getUsername()))))
                 .filter(user -> passwordEncoder.matches(new String(Base64.getDecoder().decode(sessionRequest.getPassword())), user.getPassword()))
-                .map(user -> new Session(jwtGenerator.tokenFrom(user)))
+                .flatMap(user -> loginLocationMetadata(sessionRequest.getLoginLocationUuid())
+                        .map(loginLocationMetadata -> new Session(jwtGenerator.tokenFrom(user, loginLocationMetadata)))
+                        .defaultIfEmpty(new Session(jwtGenerator.tokenFrom(user))))
                 .doOnError(logger::error)
                 .switchIfEmpty(Mono.error(new ClientError(HttpStatus.UNAUTHORIZED,
                         new ErrorRepresentation(new Error(ErrorCode.INVALID_USERNAME_OR_PASSWORD,
                                 "Invalid username or password")))));
+    }
+
+    private Mono<LoginLocationMetadata> loginLocationMetadata(String loginLocationUuid) {
+        if (!StringUtils.hasText(loginLocationUuid)) {
+            return Mono.empty();
+        }
+        return loginLocationMetadataService.fromLoginLocation(loginLocationUuid);
     }
 }
 

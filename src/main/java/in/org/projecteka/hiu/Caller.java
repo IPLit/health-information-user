@@ -1,13 +1,11 @@
 package in.org.projecteka.hiu;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Value;
 
 import java.util.Optional;
 
-@AllArgsConstructor
 @Value
 @Builder
 @Getter
@@ -16,8 +14,38 @@ public class Caller {
     Boolean isServiceAccount;
     String role;
     boolean verified;
+    String visitLocationUuid;
+    String abdmHfrId;
+    String abdmHfrName;
+
+    public Caller(String username, Boolean isServiceAccount, String role, boolean verified,
+                  String visitLocationUuid, String abdmHfrId, String abdmHfrName) {
+        this.username = username;
+        this.isServiceAccount = isServiceAccount;
+        this.role = role;
+        this.verified = verified;
+        this.visitLocationUuid = visitLocationUuid;
+        this.abdmHfrId = abdmHfrId;
+        this.abdmHfrName = abdmHfrName;
+    }
+
+    public Caller(String username, Boolean isServiceAccount, String role, boolean verified) {
+        this(username, isServiceAccount, role, verified, null, null, null);
+    }
   
     public Optional<String> getRole() {
         return Optional.ofNullable(role);
+    }
+
+    public Optional<String> getVisitLocationUuid() {
+        return Optional.ofNullable(visitLocationUuid);
+    }
+
+    public Optional<String> getAbdmHfrId() {
+        return Optional.ofNullable(abdmHfrId);
+    }
+
+    public Optional<String> getAbdmHfrName() {
+        return Optional.ofNullable(abdmHfrName);
     }
 }

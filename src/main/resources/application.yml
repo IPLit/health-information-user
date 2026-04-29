@@ -62,6 +62,10 @@ hiu:
     externalIdpClientId: ${IDP_CLIENT_ID}   #Used when useCMAsIDP is false
     externalIdpClientSecret: ${IDP_SECRET}  #Used when useCMAsIDP is false
     externalIdpAuthURL: ${IDP_AUTH_URL}     #Used when useCMAsIDP is false
+  openmrs:
+    baseUrl: ${OPENMRS_BASE_URL:}
+    username: ${OPENMRS_USERNAME:}
+    password: ${OPENMRS_PASSWORD:}
   #Valid values are guava(for local), redis
   cache-method: ${CACHE_METHOD:guava}
   redis:

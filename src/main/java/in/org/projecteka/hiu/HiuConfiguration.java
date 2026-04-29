@@ -52,6 +52,7 @@ import in.org.projecteka.hiu.dataprocessor.DataAvailabilityListener;
 import in.org.projecteka.hiu.dataprocessor.HealthDataRepository;
 import in.org.projecteka.hiu.patient.PatientService;
 import in.org.projecteka.hiu.user.JWTGenerator;
+import in.org.projecteka.hiu.user.LoginLocationMetadataService;
 import in.org.projecteka.hiu.user.SessionService;
 import in.org.projecteka.hiu.user.UserRepository;
 import in.org.projecteka.hiu.user.UserService;
@@ -106,6 +107,7 @@ import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.WebFilter;
@@ -838,8 +840,9 @@ public class HiuConfiguration {
     @Bean
     public SessionService sessionService(BCryptPasswordEncoder bCryptPasswordEncoder,
                                          UserRepository userRepository,
-                                         JWTGenerator jwtGenerator) {
-        return new SessionService(userRepository, bCryptPasswordEncoder, jwtGenerator);
+                                         JWTGenerator jwtGenerator,
+                                         LoginLocationMetadataService loginLocationMetadataService) {
+        return new SessionService(userRepository, bCryptPasswordEncoder, jwtGenerator, loginLocationMetadataService);
     }
 
     @Bean
@@ -866,6 +869,32 @@ public class HiuConfiguration {
     @Bean
     public JWTGenerator jwt(byte[] sharedSecret) {
         return new JWTGenerator(sharedSecret);
+    }
+
+    @Bean
+    public OpenMrsProperties openMrsProperties(
+            @Value("${hiu.openmrs.baseUrl:}") String baseUrl,
+            @Value("${hiu.openmrs.username:}") String username,
+            @Value("${hiu.openmrs.password:}") String password) {
+        var openMrsProperties = new OpenMrsProperties();
+        openMrsProperties.setBaseUrl(baseUrl);
+        openMrsProperties.setUsername(username);
+        openMrsProperties.setPassword(password);
+        return openMrsProperties;
+    }
+
+    @Bean
+    public LoginLocationMetadataService loginLocationMetadataService(@Qualifier("customBuilder") WebClient.Builder builder,
+                                                                     OpenMrsProperties openMrsProperties) {
+        var webClientBuilder = builder.clone();
+        if (StringUtils.hasText(openMrsProperties.getBaseUrl())) {
+            webClientBuilder.baseUrl(openMrsProperties.getBaseUrl());
+        }
+        if (StringUtils.hasText(openMrsProperties.getUsername()) && StringUtils.hasText(openMrsProperties.getPassword())) {
+            webClientBuilder.defaultHeaders(headers -> headers.setBasicAuth(
+                    openMrsProperties.getUsername(), openMrsProperties.getPassword()));
+        }
+        return new LoginLocationMetadataService(webClientBuilder.build());
     }
 
     @Bean
