@@ -47,7 +47,7 @@ public class GatewayServiceClient {
     }
 
     public Mono<Void> sendConsentRequest(String cmSuffix, ConsentRequest request, String requestId) {
-        String hiuId = request.getConsent().getHip().getId();
+        String hiuId = request.getConsent().getHiu().getId();
         return gateway.token()
                 .flatMap(token -> webClient
                         .post()
@@ -69,7 +69,7 @@ public class GatewayServiceClient {
                 .then();
     }
 
-    public Mono<Void> requestConsentArtefact(ConsentArtefactRequest request, String cmSuffix, UUID requestId, String hipId) {
+    public Mono<Void> requestConsentArtefact(ConsentArtefactRequest request, String cmSuffix, UUID requestId, String hiuId) {
         return gateway.token()
                 .flatMap(token -> webClient
                         .post()
@@ -79,7 +79,7 @@ public class GatewayServiceClient {
                         .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
                         .header(REQUEST_ID, requestId.toString())
                         .header(TIMESTAMP, Utils.getISOTimestamp())
-                        .header(X_HIU_ID, hipId) // hiuProperties.getId()
+                        .header(X_HIU_ID, hiuId) // hiuProperties.getId()
                         .body(just(request), ConsentArtefactRequest.class)
                         .retrieve()
                         .onStatus(not(HttpStatus::is2xxSuccessful), clientResponse -> error(creationFailed()))

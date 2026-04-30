@@ -1,6 +1,7 @@
 package in.org.projecteka.hiu.consent;
 
 import in.org.projecteka.hiu.Caller;
+import in.org.projecteka.hiu.common.ActiveSessionContextService;
 import in.org.projecteka.hiu.common.Constants;
 import in.org.projecteka.hiu.common.Utils;
 import in.org.projecteka.hiu.common.exception.HpinNotFoundException;
@@ -34,10 +35,16 @@ public class ConsentController {
 
     private final UserService userService;
 
+    private final ActiveSessionContextService activeSessionContextService;
+
     @PostMapping(APP_PATH_HIU_CONSENT_REQUESTS)
     public Mono<ResponseEntity<Object>> postConsentRequest(@RequestBody ConsentRequestData consentRequestData) {
         return ReactiveSecurityContextHolder.getContext()
                 .map(securityContext -> (Caller) securityContext.getAuthentication().getPrincipal())
+                .map(caller -> {
+                    consentRequestData.applyActiveSessionMetadata(activeSessionContextService.fromCaller(caller));
+                    return caller;
+                })
                 .map(Caller::getUsername)
                 .flatMap(userService::toRequester)
                 .flatMap(requester -> consentService.createRequest(requester, consentRequestData))

@@ -198,11 +198,9 @@ public class PatientConsentService {
             Requester requester,
             ConsentRequestData hiRequest,
             UUID gatewayRequestId) {
-        // Extract HIU ID and name from ConsentRequestData.hipId, fallback to hiuProperties
-        var consentHipId = hiRequest.getConsent().getHipId();
-        var hiuId = (consentHipId != null && !consentHipId.isEmpty()) ? consentHipId : hiuProperties.getId();
-        var hiuName = (consentHipId != null && !consentHipId.isEmpty()) ? consentHipId : hiuProperties.getName();    
-        var reqInfo = hiRequest.getConsent().to(requester.getName(), hiuId, hiuName, conceptValidator);
+        // HFR session fields on ConsentRequestData, else consent.hipId, else hiu.id / hiu.name
+        var identity = ConsentGatewayIdentityResolver.resolve(hiRequest, hiuProperties);
+        var reqInfo = hiRequest.getConsent().to(requester.getName(), identity.getHiuId(), identity.getHiuName(), conceptValidator);
         var encodedSign = patientHIUCertService.signConsentRequest(reqInfo);
         var requesterIdentifier = Identifier.builder().value(encodedSign).build();
         reqInfo = reqInfo.toBuilder()
@@ -215,7 +213,8 @@ public class PatientConsentService {
         var consentRequest = ConsentRequest.builder()
                 .consent(reqInfo)
                 .build();
-        var hiuConsentRequest = hiRequest.getConsent().toConsentRequest(gatewayRequestId.toString(), requester.getName());
+        var hiuConsentRequest = hiRequest.getConsent()
+                .toConsentRequest(gatewayRequestId.toString(), requester.getName(), identity.getHiuId());
         return gatewayServiceClient.sendConsentRequest(getCmSuffix(patientId), consentRequest, gatewayRequestId.toString())
                 .then(defer(() -> consentRepository.insertConsentRequestToGateway(hiuConsentRequest)));
     }

@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.Valid;
 
+import org.springframework.util.StringUtils;
+
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -36,7 +38,7 @@ public class Consent {
                                                                          String hiuId,
                                                                          String hiuName,
                                                                          ConceptLookup conceptLookup) {
-        var hip = hipId != null ? new HIP(hipId) : null;
+        var hip = StringUtils.hasText(hipId) ? new HIP(hipId) : new HIP(hiuId);
         return new in.org.projecteka.hiu.consent.model.consentmanager.Consent(
                 new in.org.projecteka.hiu.consent.model.consentmanager.Purpose(
                         conceptLookup.getPurposeDescription(getPurpose().getCode()),
@@ -54,8 +56,8 @@ public class Consent {
                 hip, careContexts);
     }
 
-    public ConsentRequest toConsentRequest(String id, String requesterId) {
-        var hip = hipId != null ? new HIP(hipId) : null;
+    public ConsentRequest toConsentRequest(String id, String requesterId, String hiuId) {
+        var hip = StringUtils.hasText(hipId) ? new HIP(hipId) : new HIP(hiuId);
         return ConsentRequest.builder()
                 .id(id)
                 .requesterId(requesterId)
@@ -73,8 +75,7 @@ public class Consent {
     public in.org.projecteka.hiu.consent.model.consentmanager.Consent to(Requester requester,
                                                                          String hiuId,
                                                                          ConceptLookup conceptLookup) {
-
-        var hip = hipId != null ? new HIP(hipId) : null;
+        var hip = StringUtils.hasText(hipId) ? new HIP(hipId) : new HIP(hiuId);
         return in.org.projecteka.hiu.consent.model.consentmanager.Consent.builder()
                 .purpose(new in.org.projecteka.hiu.consent.model.consentmanager.Purpose(
                         conceptLookup.getPurposeDescription(getPurpose().getCode()),
