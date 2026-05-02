@@ -29,14 +29,15 @@ public class KeyPairConfig {
     @Value("${keystore.password}")
     private final String keyStorePassword;
 
-    @Value("${keystore.sign-consent-request-keypair.storetype}")
-    private final String signConsentRequestKeyPairType;
+    /** Binds to {@code keystore.sign-consent-request-keypair.store-type} in application.yml. */
+    @Value("${keystore.sign-consent-request-keypair.store-type:PKCS12}")
+    private final String signConsentRequestKeyPairStoreType;
 
     @Value("${keystore.sign-consent-request-keypair.alias}")
     private final String signConsentRequestKeyPairAlias;
 
     public KeyPair createSignConsentRequestKeyPair() {
-        return getKeyPairForAlias(signConsentRequestKeyPairAlias, signConsentRequestKeyPairType);
+        return getKeyPairForAlias(signConsentRequestKeyPairAlias, signConsentRequestKeyPairStoreType);
     }
 
     @SneakyThrows

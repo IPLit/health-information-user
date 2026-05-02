@@ -25,6 +25,7 @@ public class SessionService {
     private final Logger logger = LogManager.getLogger(SessionService.class);
 
     public Mono<Session> forNew(SessionRequest sessionRequest) {
+        logger.info("sessionRequest {}", sessionRequest);
         return Mono.justOrEmpty(sessionRequest)
                 .flatMap(request -> userRepository.with(new String(Base64.getDecoder().decode(request.getUsername()))))
                 .filter(user -> passwordEncoder.matches(new String(Base64.getDecoder().decode(sessionRequest.getPassword())), user.getPassword()))
@@ -38,6 +39,7 @@ public class SessionService {
     }
 
     private Mono<LoginLocationMetadata> loginLocationMetadata(String loginLocationUuid) {
+        logger.info("loginLocationUuid {}", loginLocationUuid);
         if (!StringUtils.hasText(loginLocationUuid)) {
             return Mono.empty();
         }

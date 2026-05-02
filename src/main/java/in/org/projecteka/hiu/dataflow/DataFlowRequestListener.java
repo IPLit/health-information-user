@@ -85,7 +85,7 @@ public class DataFlowRequestListener {
                 gateway.token()
                         .flatMap(token -> {
                             var hipId = consentRepository.getHipId(consentId).block();
-                            logger.warn("Received data flow request " + dataFlowRequest.getDataPushUrl() + " with hipId " + hipId);
+                            logger.info("Received data flow request " + dataFlowRequest.getDataPushUrl() + " with hipId " + hipId);
                             var gatewayDataFlowRequest = getDataFlowRequest(dataFlowRequest);
                             String requestId = UUID.randomUUID().toString();
                             logger.info("[DataFlowRequestListener] Initiating data flow request to consent manager with RequestID" +

@@ -121,7 +121,7 @@ public class ConsentService {
                 .build();
         var hiuConsentRequest = hiRequest.getConsent().toConsentRequest(gatewayRequestId.toString(), requester.getName(), identity.getHiuId());
         return consentRepository.insertConsentRequestToGateway(hiuConsentRequest)
-                .then(gatewayServiceClient.sendConsentRequest(getCmSuffix(patientId), consentRequest, gatewayRequestId.toString()));
+                .then(gatewayServiceClient.sendConsentRequest(getCmSuffix(patientId), consentRequest, gatewayRequestId.toString(), identity.getHiuId()));
     }
 
     public Mono<Void> updatePostedRequest(ConsentRequestInitResponse response) {

@@ -872,18 +872,6 @@ public class HiuConfiguration {
     }
 
     @Bean
-    public OpenMrsProperties openMrsProperties(
-            @Value("${hiu.openmrs.baseUrl:}") String baseUrl,
-            @Value("${hiu.openmrs.username:}") String username,
-            @Value("${hiu.openmrs.password:}") String password) {
-        var openMrsProperties = new OpenMrsProperties();
-        openMrsProperties.setBaseUrl(baseUrl);
-        openMrsProperties.setUsername(username);
-        openMrsProperties.setPassword(password);
-        return openMrsProperties;
-    }
-
-    @Bean
     public LoginLocationMetadataService loginLocationMetadataService(@Qualifier("customBuilder") WebClient.Builder builder,
                                                                      OpenMrsProperties openMrsProperties) {
         var webClientBuilder = builder.clone();

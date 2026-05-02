@@ -99,7 +99,7 @@ class ConsentServiceTest {
         consentRequestData.getConsent().getPatient().setId("hinapatel79@ncg");
 
         when(conceptValidator.validatePurpose(anyString())).thenReturn(just(true));
-        when(gatewayServiceClient.sendConsentRequest(anyString(), any(),any()))
+        when(gatewayServiceClient.sendConsentRequest(anyString(), any(),any(),anyString()))
                 .thenReturn(empty());
         when(consentRepository.insertConsentRequestToGateway(any())).thenReturn(Mono.create(MonoSink::success));
 

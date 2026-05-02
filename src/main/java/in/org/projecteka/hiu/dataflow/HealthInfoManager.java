@@ -244,7 +244,7 @@ public class HealthInfoManager {
 
     private boolean isConsentNotExpired(Map<String, String> consentDetail) {
         var consentExpiryDate = LocalDateTime.parse(consentDetail.get("consentExpiryDate"), DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN));
-        return LocalDateTime.now(Utils.zOffset).isBefore(consentExpiryDate);
+        return consentExpiryDate.isAfter(LocalDateTime.now(Utils.zOffset));
     }
 
     private boolean isGrantedConsent(Map<String, String> consentDetail) {

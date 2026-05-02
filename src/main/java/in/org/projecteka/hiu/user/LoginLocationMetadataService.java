@@ -1,9 +1,13 @@
 package in.org.projecteka.hiu.user;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
+import in.org.projecteka.hiu.OpenMrsProperties;
 import lombok.AllArgsConstructor;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClient.Builder;
+
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
@@ -14,7 +18,15 @@ public class LoginLocationMetadataService {
     private static final String ATTR_ABDM_HFR_ID = "ABDM HFR ID";
     private static final String ATTR_ABDM_HFR_NAME = "ABDM HFR Name";
 
-    private final WebClient webClient;
+    private WebClient webClient = null;
+
+    public LoginLocationMetadataService(OpenMrsProperties openMrsProperties) {
+        Builder builder = WebClient.builder().baseUrl(openMrsProperties.getBaseUrl());
+        if (StringUtils.hasText(openMrsProperties.getUsername()) && StringUtils.hasText(openMrsProperties.getPassword())) {
+            this.webClient = builder.defaultHeaders(headers -> headers.setBasicAuth(
+                openMrsProperties.getUsername(), openMrsProperties.getPassword())).build();
+        }
+    }
 
     public Mono<LoginLocationMetadata> fromLoginLocation(String loginLocationUuid) {
         if (!StringUtils.hasText(loginLocationUuid)) {

@@ -187,7 +187,7 @@ public class DataFlowService {
     }
 
     private boolean hasConsentArtefactExpired(LocalDateTime dataEraseAt) {
-        return dataEraseAt != null && dataEraseAt.isAfter(LocalDateTime.now(in.org.projecteka.hiu.common.Utils.zOffset));
+        return dataEraseAt != null && dataEraseAt.compareTo(LocalDateTime.now(in.org.projecteka.hiu.common.Utils.zOffset)) > 0;
     }
 
     private boolean hasContent(Entry entry) {

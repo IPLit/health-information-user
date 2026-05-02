@@ -46,8 +46,7 @@ public class GatewayServiceClient {
         this.hiuProperties = hiuProperties;
     }
 
-    public Mono<Void> sendConsentRequest(String cmSuffix, ConsentRequest request, String requestId) {
-        String hiuId = request.getConsent().getHiu().getId();
+    public Mono<Void> sendConsentRequest(String cmSuffix, ConsentRequest request, String requestId, String hiuId) {
         return gateway.token()
                 .flatMap(token -> webClient
                         .post()
