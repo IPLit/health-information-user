@@ -23,6 +23,9 @@ import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,15 +40,22 @@ public class ConsentController {
 
     private final ActiveSessionContextService activeSessionContextService;
 
+    private static final Logger logger = LogManager.getLogger(ConsentController.class);
+
     @PostMapping(APP_PATH_HIU_CONSENT_REQUESTS)
     public Mono<ResponseEntity<Object>> postConsentRequest(@RequestBody ConsentRequestData consentRequestData) {
         return ReactiveSecurityContextHolder.getContext()
                 .map(securityContext -> (Caller) securityContext.getAuthentication().getPrincipal())
                 .map(caller -> {
-                    consentRequestData.applyActiveSessionMetadata(activeSessionContextService.fromCaller(caller));
-                    return caller;
+                    var activeSessionContext = activeSessionContextService.fromCaller(caller);
+                    logger.debug("activeSessionContext {}", activeSessionContext);
+                    activeSessionContext = activeSessionContext==null ? activeSessionContextService.current().block() : activeSessionContext;
+                    logger.debug("activeSessionContext {}", activeSessionContext);
+                    consentRequestData.applyActiveSessionMetadata(activeSessionContext);
+                    consentRequestData.getConsent().setHipId(activeSessionContext.getEffectiveHiuId());
+                    logger.debug("consentRequestData {}", consentRequestData);
+                    return caller.getUsername();
                 })
-                .map(Caller::getUsername)
                 .flatMap(userService::toRequester)
                 .flatMap(requester -> consentService.createRequest(requester, consentRequestData))
                 .thenReturn(new ResponseEntity<>(HttpStatus.ACCEPTED))

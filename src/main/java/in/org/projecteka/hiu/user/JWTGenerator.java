@@ -19,10 +19,10 @@ public class JWTGenerator {
 
     private final byte[] sharedSecret;
 
-    @SneakyThrows
-    public String tokenFrom(User user) {
-        return tokenFrom(user, null);
-    }
+//     @SneakyThrows
+//     public String tokenFrom(User user) {
+//         return tokenFrom(user, null);
+//     }
 
     @SneakyThrows
     public String tokenFrom(User user, LoginLocationMetadata loginLocationMetadata) {
@@ -33,11 +33,11 @@ public class JWTGenerator {
                 .claim("isVerified", user.isVerified())
                 .claim("exp", Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli());
 
-        Optional.ofNullable(loginLocationMetadata).map(LoginLocationMetadata::getVisitLocationUuid)
+        Optional.ofNullable(loginLocationMetadata).map(locationMetadata -> locationMetadata.getVisitLocationUuid())
                 .ifPresent(value -> claimsBuilder.claim("visitLocationUuid", value));
-        Optional.ofNullable(loginLocationMetadata).map(LoginLocationMetadata::getAbdmHfrId)
+        Optional.ofNullable(loginLocationMetadata).map(locationMetadata -> locationMetadata.getAbdmHfrId())
                 .ifPresent(value -> claimsBuilder.claim("abdmHfrId", value));
-        Optional.ofNullable(loginLocationMetadata).map(LoginLocationMetadata::getAbdmHfrName)
+        Optional.ofNullable(loginLocationMetadata).map(locationMetadata -> locationMetadata.getAbdmHfrName())
                 .ifPresent(value -> claimsBuilder.claim("abdmHfrName", value));
 
         JWTClaimsSet claims = claimsBuilder.build();

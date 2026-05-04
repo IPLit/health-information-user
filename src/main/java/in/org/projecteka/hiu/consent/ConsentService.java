@@ -1,5 +1,6 @@
 package in.org.projecteka.hiu.consent;
 
+import in.org.projecteka.hiu.Caller;
 import in.org.projecteka.hiu.ClientError;
 import in.org.projecteka.hiu.Error;
 import in.org.projecteka.hiu.ErrorRepresentation;
@@ -112,16 +113,15 @@ public class ConsentService {
             Requester requester,
             ConsentRequestData hiRequest,
             UUID gatewayRequestId) {
-        // HFR session fields on ConsentRequestData, else consent.hipId, else hiu.id / hiu.name
-        var identity = ConsentGatewayIdentityResolver.resolve(hiRequest, hiuProperties);
-        var reqInfo = hiRequest.getConsent().to(requester.getName(), identity.getHiuId(), identity.getHiuName(), conceptValidator);
+        var reqInfo = hiRequest.getConsent().to(requester.getName(), hiRequest.getAbdmHfrId(), hiRequest.getAbdmHfrName(), conceptValidator);
         var patientId = hiRequest.getConsent().getPatient().getId();
+        reqInfo.setPatient(hiRequest.getConsent().getPatient());
         var consentRequest = ConsentRequest.builder()
                 .consent(reqInfo)
                 .build();
-        var hiuConsentRequest = hiRequest.getConsent().toConsentRequest(gatewayRequestId.toString(), requester.getName(), identity.getHiuId());
+        var hiuConsentRequest = hiRequest.getConsent().toConsentRequest(gatewayRequestId.toString(), requester.getName(), hiRequest.getAbdmHfrId());
         return consentRepository.insertConsentRequestToGateway(hiuConsentRequest)
-                .then(gatewayServiceClient.sendConsentRequest(getCmSuffix(patientId), consentRequest, gatewayRequestId.toString(), identity.getHiuId()));
+                .then(gatewayServiceClient.sendConsentRequest(getCmSuffix(patientId), consentRequest, gatewayRequestId.toString(), hiRequest.getAbdmHfrId()));
     }
 
     public Mono<Void> updatePostedRequest(ConsentRequestInitResponse response) {

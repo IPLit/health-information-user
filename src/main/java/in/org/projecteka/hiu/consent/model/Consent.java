@@ -38,7 +38,6 @@ public class Consent {
                                                                          String hiuId,
                                                                          String hiuName,
                                                                          ConceptLookup conceptLookup) {
-        var hip = StringUtils.hasText(hipId) ? new HIP(hipId) : new HIP(hiuId);
         return new in.org.projecteka.hiu.consent.model.consentmanager.Consent(
                 new in.org.projecteka.hiu.consent.model.consentmanager.Purpose(
                         conceptLookup.getPurposeDescription(getPurpose().getCode()),
@@ -53,11 +52,10 @@ public class Consent {
                         getPermission().getDataEraseAt(),
                         ONE_HOUR,
                         getPermission().getDataGrantedOn()),
-                hip, careContexts);
+                new HIP(hiuId), careContexts);
     }
 
     public ConsentRequest toConsentRequest(String id, String requesterId, String hiuId) {
-        var hip = StringUtils.hasText(hipId) ? new HIP(hipId) : new HIP(hiuId);
         return ConsentRequest.builder()
                 .id(id)
                 .requesterId(requesterId)
@@ -67,7 +65,7 @@ public class Consent {
                 .permission(getPermission())
                 .status(ConsentStatus.REQUESTED)
                 .createdDate(ZonedDateTime.now(Utils.zOffset).toLocalDateTime())
-                .hip(hip)
+                .hip(new HIP(hiuId))
                 .careContexts(getCareContexts())
                 .build();
     }
@@ -75,7 +73,6 @@ public class Consent {
     public in.org.projecteka.hiu.consent.model.consentmanager.Consent to(Requester requester,
                                                                          String hiuId,
                                                                          ConceptLookup conceptLookup) {
-        var hip = StringUtils.hasText(hipId) ? new HIP(hipId) : new HIP(hiuId);
         return in.org.projecteka.hiu.consent.model.consentmanager.Consent.builder()
                 .purpose(new in.org.projecteka.hiu.consent.model.consentmanager.Purpose(
                         conceptLookup.getPurposeDescription(getPurpose().getCode()),
@@ -91,7 +88,7 @@ public class Consent {
                         getPermission().getDataEraseAt(),
                         ONE_HOUR,
                         getPermission().getDataGrantedOn()))
-                .hip(hip)
+                .hip(new HIP(hiuId))
                 .build();
 
     }

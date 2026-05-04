@@ -29,21 +29,25 @@ public class SessionService {
         return Mono.justOrEmpty(sessionRequest)
                 .flatMap(request -> userRepository.with(new String(Base64.getDecoder().decode(request.getUsername()))))
                 .filter(user -> passwordEncoder.matches(new String(Base64.getDecoder().decode(sessionRequest.getPassword())), user.getPassword()))
-                .flatMap(user -> loginLocationMetadata(sessionRequest.getLoginLocationUuid())
-                        .map(loginLocationMetadata -> new Session(jwtGenerator.tokenFrom(user, loginLocationMetadata)))
-                        .defaultIfEmpty(new Session(jwtGenerator.tokenFrom(user))))
+                .flatMap(user -> getLoginLocationMetadata(sessionRequest.getLoginLocationUuid())
+                        .map(loginLocationMetadata -> new Session(jwtGenerator.tokenFrom(user, loginLocationMetadata))))
+                        // .defaultIfEmpty(new Session(jwtGenerator.tokenFrom(user, null))))
                 .doOnError(logger::error)
                 .switchIfEmpty(Mono.error(new ClientError(HttpStatus.UNAUTHORIZED,
                         new ErrorRepresentation(new Error(ErrorCode.INVALID_USERNAME_OR_PASSWORD,
                                 "Invalid username or password")))));
     }
 
-    private Mono<LoginLocationMetadata> loginLocationMetadata(String loginLocationUuid) {
+    private Mono<LoginLocationMetadata> getLoginLocationMetadata(String loginLocationUuid) {
         logger.info("loginLocationUuid {}", loginLocationUuid);
         if (!StringUtils.hasText(loginLocationUuid)) {
             return Mono.empty();
         }
-        return loginLocationMetadataService.fromLoginLocation(loginLocationUuid);
+        var loginLocationMetadata = loginLocationMetadataService.fromLoginLocation(loginLocationUuid);
+        if (loginLocationMetadata == null) {
+            return Mono.empty();
+        }
+        logger.info("loginLocationMetadata {}", loginLocationMetadata);
+        return Mono.just(loginLocationMetadata);
     }
 }
-

@@ -31,11 +31,11 @@ public class ConsentRequestData {
         if (context == null) {
             return;
         }
-        if (StringUtils.hasText(context.getAbdmHfrId())) {
-            this.abdmHfrId = context.getAbdmHfrId();
+        if (StringUtils.hasText(context.getEffectiveHiuId())) {
+            this.abdmHfrId = context.getEffectiveHiuId();
         }
-        if (StringUtils.hasText(context.getAbdmHfrName())) {
-            this.abdmHfrName = context.getAbdmHfrName();
+        if (StringUtils.hasText(context.getEffectiveHiuName())) {
+            this.abdmHfrName = context.getEffectiveHiuName();
         }
         if (StringUtils.hasText(context.getVisitLocationUuid())) {
             this.visitLocationUuid = context.getVisitLocationUuid();

@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import in.org.projecteka.hiu.OpenMrsProperties;
 import lombok.AllArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.Builder;
-
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
@@ -17,25 +17,27 @@ public class LoginLocationMetadataService {
     private static final String VISIT_LOCATION_TAG = "Visit Location";
     private static final String ATTR_ABDM_HFR_ID = "ABDM HFR ID";
     private static final String ATTR_ABDM_HFR_NAME = "ABDM HFR Name";
+    private final OpenMrsProperties openMrsProperties;
+    private WebClient webClient;
+    private static final Logger logger = LogManager.getLogger(LoginLocationMetadataService.class);
 
-    private WebClient webClient = null;
 
-    public LoginLocationMetadataService(OpenMrsProperties openMrsProperties) {
-        Builder builder = WebClient.builder().baseUrl(openMrsProperties.getBaseUrl());
-        if (StringUtils.hasText(openMrsProperties.getUsername()) && StringUtils.hasText(openMrsProperties.getPassword())) {
-            this.webClient = builder.defaultHeaders(headers -> headers.setBasicAuth(
-                openMrsProperties.getUsername(), openMrsProperties.getPassword())).build();
+    public LoginLocationMetadata fromLoginLocation(String loginLocationUuid) {
+        if (StringUtils.hasText(openMrsProperties.getBaseUrl())) {
+            webClient = WebClient.builder().baseUrl(openMrsProperties.getBaseUrl())
+            .defaultHeaders(headers -> headers.setBasicAuth(
+                openMrsProperties.getUsername(), openMrsProperties.getPassword()))
+            .build();
         }
-    }
-
-    public Mono<LoginLocationMetadata> fromLoginLocation(String loginLocationUuid) {
         if (!StringUtils.hasText(loginLocationUuid)) {
-            return Mono.empty();
+            return null;
         }
-        return getLocation(loginLocationUuid)
+        var location = getLocation(loginLocationUuid)
                 .flatMap(this::visitLocationFor)
-                .flatMap(this::extractMetadata)
-                .onErrorResume(throwable -> Mono.empty());
+                .map(this::extractMetadata)
+                .block();
+        logger.debug("location {}", location);
+        return location;
     }
 
     private Mono<JsonNode> visitLocationFor(JsonNode location) {
@@ -43,19 +45,23 @@ public class LoginLocationMetadataService {
             return Mono.just(location);
         }
 
-        var parentUuid = textAt(location, "parentLocation", "uuid");
+        var parentLocation = location.path("parentLocation");
+        if (parentLocation.isMissingNode() || parentLocation.isNull()) {
+            return null;
+        }
+        var parentUuid = parentLocation.path("uuid").asText();
         if (!StringUtils.hasText(parentUuid)) {
-            return Mono.empty();
+            return null;
         }
         return getLocation(parentUuid).flatMap(this::visitLocationFor);
     }
 
-    private Mono<LoginLocationMetadata> extractMetadata(JsonNode visitLocation) {
-        return Mono.just(LoginLocationMetadata.builder()
-                .visitLocationUuid(textAt(visitLocation, "uuid"))
+    private LoginLocationMetadata extractMetadata(JsonNode visitLocation) {
+        return LoginLocationMetadata.builder()
+                .visitLocationUuid(visitLocation.path("uuid").asText())
                 .abdmHfrId(attributeValue(visitLocation, ATTR_ABDM_HFR_ID).orElse(null))
                 .abdmHfrName(attributeValue(visitLocation, ATTR_ABDM_HFR_NAME).orElse(null))
-                .build());
+                .build();
     }
 
     private Mono<JsonNode> getLocation(String locationUuid) {
@@ -71,9 +77,13 @@ public class LoginLocationMetadataService {
             return false;
         }
         for (JsonNode tag : tags) {
-            var display = textAt(tag, "display");
-            var name = textAt(tag, "name");
-            if (VISIT_LOCATION_TAG.equalsIgnoreCase(display) || VISIT_LOCATION_TAG.equalsIgnoreCase(name)) {
+            var display = tag.path("display");
+            if (display.isMissingNode() || display.isNull()) {
+                continue;
+            }
+            var displayText = display.asText();
+            if (VISIT_LOCATION_TAG.equalsIgnoreCase(displayText)) {
+                logger.debug("isVisitLocation: true for display: {}", displayText);
                 return true;
             }
         }
@@ -83,26 +93,23 @@ public class LoginLocationMetadataService {
     private Optional<String> attributeValue(JsonNode location, String attributeTypeName) {
         var attributes = location.path("attributes");
         if (!attributes.isArray()) {
-            return Optional.empty();
+            return null;
         }
         for (JsonNode attribute : attributes) {
-            var typeDisplay = textAt(attribute.path("attributeType"), "display");
-            var typeName = textAt(attribute.path("attributeType"), "name");
-            if (attributeTypeName.equalsIgnoreCase(typeDisplay) || attributeTypeName.equalsIgnoreCase(typeName)) {
-                var value = textAt(attribute, "value");
+            var typeDisplay = attribute.path("display");
+            if (typeDisplay.isMissingNode() || typeDisplay.isNull()) {
+                continue;
+            }
+            var typeDisplayText = typeDisplay.asText();
+            if (typeDisplayText.toLowerCase().contains(attributeTypeName.toLowerCase())) {
+                var value = typeDisplayText.split(":")[1];
                 if (StringUtils.hasText(value)) {
-                    return Optional.of(value);
+                    logger.debug("attributeValue: {} for attribute type: {}", value, attributeTypeName);
+                    return Optional.of(value.trim());
                 }
             }
         }
-        return Optional.empty();
+        return null;
     }
 
-    private String textAt(JsonNode node, String... fields) {
-        JsonNode cursor = node;
-        for (String field : fields) {
-            cursor = cursor.path(field);
-        }
-        return cursor.isMissingNode() || cursor.isNull() ? null : cursor.asText();
-    }
 }

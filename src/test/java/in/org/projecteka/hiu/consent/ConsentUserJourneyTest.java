@@ -190,7 +190,7 @@ class ConsentUserJourneyTest {
         consentRequestDetails.getConsent().getPatient().setId("hinapatel79@ncg");
         var token = randomString();
         var userName = "testUser";
-        var caller = new Caller(userName, false, Role.ADMIN.toString(), true);
+        var caller = new Caller(userName, false, Role.ADMIN.toString(), true, null, null, null);
         when(authenticator.verify(token)).thenReturn(just(caller));
         when(userService.toRequester(userName)).thenReturn(just(Requester.builder().name(userName).build()));
         var dateEraseAt = LocalDateTime.of(LocalDate.of(2050, 1, 1), LocalTime.of(10, 30));
@@ -475,7 +475,7 @@ class ConsentUserJourneyTest {
                 new MockResponse().setHeader("Content-Type", "application/json").setResponseCode(202));
         var consentRequestDetails = new PatientConsentRequest(List.of(hipId), false);
         var token = randomString();
-        var caller = new Caller(requesterId, false, Role.ADMIN.toString(), true);
+        var caller = new Caller(requesterId, false, Role.ADMIN.toString(), true, null, null, null);
         when(cmPatientAuthenticator.verify(token)).thenReturn(just(caller));
         when(consentRepository.insertConsentRequestToGateway(any())).thenReturn(Mono.create(MonoSink::success));
         when(patientConsentRepository.getLatestDataRequestsForPatient(eq(requesterId), any())).thenReturn(Mono.empty());
@@ -503,7 +503,7 @@ class ConsentUserJourneyTest {
                 new MockResponse().setHeader("Content-Type", "application/json").setResponseCode(202));
         var consentRequestDetails = new PatientConsentRequest(List.of(hipId), false);
         var token = randomString();
-        var caller = new Caller(requesterId, false, Role.ADMIN.toString(), true);
+        var caller = new Caller(requesterId, false, Role.ADMIN.toString(), true, null, null, null);
         when(cmPatientAuthenticator.verify(token)).thenReturn(just(caller));
         when(healthInfoManager.fetchHealthInformationStatus(any(), eq(requesterId))).thenReturn(Flux.empty());
 

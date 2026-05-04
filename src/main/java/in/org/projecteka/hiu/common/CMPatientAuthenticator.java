@@ -37,7 +37,8 @@ public class CMPatientAuthenticator implements Authenticator {
         this.jwtProcessor.setJWSKeySelector(keySelector);
         this.jwtProcessor.setJWTClaimsSetVerifier(new DefaultJWTClaimsVerifier<>(
                 new JWTClaimsSet.Builder().build(),
-                new HashSet<>(Arrays.asList("sub", "iat", "exp", "scope", "preferred_username"))));
+                new HashSet<>(Arrays.asList("sub", "iat", "exp", "scope","username", "role", "isVerified", "preferred_username", "abdmHfrId", "abdmHfrName")))
+        );
     }
 
     @Override
@@ -58,7 +59,9 @@ public class CMPatientAuthenticator implements Authenticator {
                 return;
             }
             try {
-                monoSink.success(from(jwtClaimsSet.getStringClaim("preferred_username")));
+                monoSink.success(from(jwtClaimsSet.getStringClaim("preferred_username"),
+                    jwtClaimsSet.getStringClaim("abdmHfrId"),
+                    jwtClaimsSet.getStringClaim("abdmHfrName")));
             } catch (ParseException e) {
                 logger.error("Unauthorized CMPatient access with token " + token, e);
                 monoSink.success();
@@ -66,10 +69,10 @@ public class CMPatientAuthenticator implements Authenticator {
         });
     }
 
-    protected Caller from(String preferredUsername) {
+    protected Caller from(String preferredUsername, String abdmHfrId, String abdmHfrName) {
         final String serviceAccountPrefix = "service-account-";
         var serviceAccount = preferredUsername.startsWith(serviceAccountPrefix);
         var userName = serviceAccount ? preferredUsername.substring(serviceAccountPrefix.length()) : preferredUsername;
-        return new Caller(userName, serviceAccount, null, false);
+        return new Caller(userName, serviceAccount, null, false, null, abdmHfrId, abdmHfrName);
     }
 }

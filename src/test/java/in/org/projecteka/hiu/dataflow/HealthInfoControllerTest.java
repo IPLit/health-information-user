@@ -120,7 +120,7 @@ class HealthInfoControllerTest {
 
         var token = TestBuilders.string();
         var requester = "someone@ncg";
-        var caller = new Caller(requester, false, null, true);
+        var caller = new Caller(requester, false, null, true, null, null, null);
         var healthInfoRequest = TestBuilders.healthInformationRequest().limit(10).build();
         var dataRequestMappings = TestBuilders.dataRequestMappings(2).stream()
                 .map(PatientDataRequestMapping.PatientDataRequestMappingBuilder::build)
@@ -180,7 +180,7 @@ class HealthInfoControllerTest {
     void shouldReturnSucceededStatusForGivenDataRequestIds() throws JsonProcessingException {
         var token = TestBuilders.string();
         var requester = "someone@ncg";
-        var caller = new Caller(requester, false, null, true);
+        var caller = new Caller(requester, false, null, true, null, null, null);
         var dataRequestIds = List.of(UUID.randomUUID().toString());
         var dataStatusCheckRequest = DataRequestStatusCheckRequest.builder().requestIds(dataRequestIds).build();
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
@@ -204,7 +204,7 @@ class HealthInfoControllerTest {
     void shouldReturnPartialStatusForGivenDataRequestIds() throws JsonProcessingException {
         var token = TestBuilders.string();
         var requester = "someone@ncg";
-        var caller = new Caller(requester, false, null, true);
+        var caller = new Caller(requester, false, null, true, null, null, null);
         var dataRequestIds = List.of(UUID.randomUUID().toString());
         var dataStatusCheckRequest = DataRequestStatusCheckRequest.builder().requestIds(dataRequestIds).build();
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
@@ -228,7 +228,7 @@ class HealthInfoControllerTest {
     void shouldReturnProcessingStatusWhenDataPartIsBeingProcessed() throws JsonProcessingException {
         var token = TestBuilders.string();
         var requester = "someone@ncg";
-        var caller = new Caller(requester, false, null, true);
+        var caller = new Caller(requester, false, null, true, null, null, null);
         var dataRequestIds = List.of(UUID.randomUUID().toString());
         var dataStatusCheckRequest = DataRequestStatusCheckRequest.builder().requestIds(dataRequestIds).build();
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
@@ -252,7 +252,7 @@ class HealthInfoControllerTest {
     void shouldReturnErroredStatusWhenDataPartHasAllEntriesErrored() throws JsonProcessingException {
         var token = TestBuilders.string();
         var requester = "someone@ncg";
-        var caller = new Caller(requester, false, null, true);
+        var caller = new Caller(requester, false, null, true, null, null, null);
         var dataRequestIds = List.of(UUID.randomUUID().toString());
         var dataStatusCheckRequest = DataRequestStatusCheckRequest.builder().requestIds(dataRequestIds).build();
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
@@ -276,7 +276,7 @@ class HealthInfoControllerTest {
     void shouldReturnProcessingStatusWhenConsentRequestIsNotCreatedAndWaitingTimeIsNotPassed() throws JsonProcessingException {
         var token = TestBuilders.string();
         var requester = "someone@ncg";
-        var caller = new Caller(requester, false, null, true);
+        var caller = new Caller(requester, false, null, true, null, null, null);
         var dataRequestIds = List.of(UUID.randomUUID().toString());
         var dataStatusCheckRequest = DataRequestStatusCheckRequest.builder().requestIds(dataRequestIds).build();
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
@@ -304,7 +304,7 @@ class HealthInfoControllerTest {
     void shouldReturnProcessingStatusWhenConsentArtefactIsNotReachedAndWaitingTimeIsNotPassed() throws JsonProcessingException {
         var token = TestBuilders.string();
         var requester = "someone@ncg";
-        var caller = new Caller(requester, false, null, true);
+        var caller = new Caller(requester, false, null, true, null, null, null);
         var dataRequestIds = List.of(UUID.randomUUID().toString());
         var dataStatusCheckRequest = DataRequestStatusCheckRequest.builder().requestIds(dataRequestIds).build();
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
@@ -332,7 +332,7 @@ class HealthInfoControllerTest {
     void shouldReturnProcessingStatusWhenDataFlowIsNotReachedAndWaitingTimeIsNotPassed() throws JsonProcessingException {
         var token = TestBuilders.string();
         var requester = "someone@ncg";
-        var caller = new Caller(requester, false, null, true);
+        var caller = new Caller(requester, false, null, true, null, null, null);
         var dataRequestIds = List.of(UUID.randomUUID().toString());
         var dataStatusCheckRequest = DataRequestStatusCheckRequest.builder().requestIds(dataRequestIds).build();
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
@@ -360,7 +360,7 @@ class HealthInfoControllerTest {
     void shouldReturnErroredStatusWhenDataFlowIsNotReachedWithinWatingTimeLimit() throws JsonProcessingException {
         var token = TestBuilders.string();
         var requester = "someone@ncg";
-        var caller = new Caller(requester, false, null, true);
+        var caller = new Caller(requester, false, null, true, null, null, null);
         var dataRequestIds = List.of(UUID.randomUUID().toString());
         var dataStatusCheckRequest = DataRequestStatusCheckRequest.builder().requestIds(dataRequestIds).build();
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
@@ -388,7 +388,7 @@ class HealthInfoControllerTest {
     void shouldReturnErroredStatusWhenConsentArtefactNotReachedWithinWatingTimeLimit() throws JsonProcessingException {
         var token = TestBuilders.string();
         var requester = "someone@ncg";
-        var caller = new Caller(requester, false, null, true);
+        var caller = new Caller(requester, false, null, true, null, null, null);
         var dataRequestIds = List.of(UUID.randomUUID().toString());
         var dataStatusCheckRequest = DataRequestStatusCheckRequest.builder().requestIds(dataRequestIds).build();
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
@@ -416,7 +416,7 @@ class HealthInfoControllerTest {
     void shouldReturnErroredStatusWhenConsentRequestIsNotCreatedWithinWatingTimeLimit() throws JsonProcessingException {
         var token = TestBuilders.string();
         var requester = "someone@ncg";
-        var caller = new Caller(requester, false, null, true);
+        var caller = new Caller(requester, false, null, true, null, null, null);
         var dataRequestIds = List.of(UUID.randomUUID().toString());
         var dataStatusCheckRequest = DataRequestStatusCheckRequest.builder().requestIds(dataRequestIds).build();
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);
@@ -444,7 +444,7 @@ class HealthInfoControllerTest {
     void shouldReturnEmptyStatusesDataRequestIdDoesntBelongToRequester() throws JsonProcessingException {
         var token = TestBuilders.string();
         var requester = "someone@ncg";
-        var caller = new Caller(requester, false, null, true);
+        var caller = new Caller(requester, false, null, true, null, null, null);
         var dataRequestIds = List.of(UUID.randomUUID().toString());
         var dataStatusCheckRequest = DataRequestStatusCheckRequest.builder().requestIds(dataRequestIds).build();
         ArgumentCaptor<Set<String>> dataRequestIdsCaptor = ArgumentCaptor.forClass(Set.class);

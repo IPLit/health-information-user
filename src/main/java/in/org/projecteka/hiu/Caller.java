@@ -28,10 +28,6 @@ public class Caller {
         this.abdmHfrId = abdmHfrId;
         this.abdmHfrName = abdmHfrName;
     }
-
-    public Caller(String username, Boolean isServiceAccount, String role, boolean verified) {
-        this(username, isServiceAccount, role, verified, null, null, null);
-    }
   
     public Optional<String> getRole() {
         return Optional.ofNullable(role);

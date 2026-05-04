@@ -14,7 +14,7 @@ class JWTGeneratorTest {
     void verifyToken() throws ParseException {
         var jwsSignerSecret = "RiPzliMKlBf67mgLpvn6LBg2Fz5OqBBmJNzi4nQ9YMZy0pq2uu".getBytes();
         var user = user().build();
-        var tokenWithBearerAlias = new JWTGenerator(jwsSignerSecret).tokenFrom(user);
+        var tokenWithBearerAlias = new JWTGenerator(jwsSignerSecret).tokenFrom(user, null);
 
         assertThat(tokenWithBearerAlias.startsWith("Bearer ")).isTrue();
 

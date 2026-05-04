@@ -872,17 +872,8 @@ public class HiuConfiguration {
     }
 
     @Bean
-    public LoginLocationMetadataService loginLocationMetadataService(@Qualifier("customBuilder") WebClient.Builder builder,
-                                                                     OpenMrsProperties openMrsProperties) {
-        var webClientBuilder = builder.clone();
-        if (StringUtils.hasText(openMrsProperties.getBaseUrl())) {
-            webClientBuilder.baseUrl(openMrsProperties.getBaseUrl());
-        }
-        if (StringUtils.hasText(openMrsProperties.getUsername()) && StringUtils.hasText(openMrsProperties.getPassword())) {
-            webClientBuilder.defaultHeaders(headers -> headers.setBasicAuth(
-                    openMrsProperties.getUsername(), openMrsProperties.getPassword()));
-        }
-        return new LoginLocationMetadataService(webClientBuilder.build());
+    public LoginLocationMetadataService loginLocationMetadataService(OpenMrsProperties openMrsProperties) {
+        return new LoginLocationMetadataService(openMrsProperties, WebClient.builder().build());
     }
 
     @Bean
