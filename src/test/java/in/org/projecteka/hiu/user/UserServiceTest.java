@@ -10,6 +10,8 @@ import org.mockito.Mock;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.List;
+
 import static in.org.projecteka.hiu.user.TestBuilders.string;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -42,6 +44,11 @@ class UserServiceTest {
                         .value(validHpin)
                         .system(Constants.REQUESTER_IDENTIFIER_SYSTEM)
                         .build())
+                .identifiers(List.of(Identifier.builder()
+                        .type(Constants.REQUESTER_IDENTIFIER_TYPE)
+                        .value(validHpin)
+                        .system(Constants.REQUESTER_IDENTIFIER_SYSTEM)
+                        .build()))
                 .build();
 
         StepVerifier.create(userService.toRequester(username))

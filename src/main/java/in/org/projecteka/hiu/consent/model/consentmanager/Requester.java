@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 @AllArgsConstructor
 @Builder
@@ -14,4 +16,5 @@ import lombok.NoArgsConstructor;
 public class Requester {
     private String name;
     private Identifier identifier;
+    private List<Identifier> identifiers;
 }

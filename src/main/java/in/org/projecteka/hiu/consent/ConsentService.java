@@ -28,6 +28,7 @@ import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -114,6 +115,13 @@ public class ConsentService {
             ConsentRequestData hiRequest,
             UUID gatewayRequestId) {
         var reqInfo = hiRequest.getConsent().to(requester.getName(), hiRequest.getAbdmHfrId(), hiRequest.getAbdmHfrName(), conceptValidator);
+        reqInfo = reqInfo.toBuilder()
+                .requester(Requester.builder()
+                        .name(requester.getName())
+                        .identifier(requester.getIdentifier())
+                        .identifiers(requester.getIdentifier() == null ? null : List.of(requester.getIdentifier()))
+                        .build())
+                .build();
         var patientId = hiRequest.getConsent().getPatient().getId();
         reqInfo.setPatient(hiRequest.getConsent().getPatient());
         var consentRequest = ConsentRequest.builder()

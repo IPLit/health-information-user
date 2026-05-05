@@ -207,6 +207,7 @@ public class PatientConsentService {
                 .requester(Requester.builder()
                         .name(reqInfo.getRequester().getName())
                         .identifier(requesterIdentifier)
+                        .identifiers(List.of(requesterIdentifier))
                         .build())
                 .build();
         var patientId = hiRequest.getConsent().getPatient().getId();
@@ -226,7 +227,12 @@ public class PatientConsentService {
     }
 
     private Requester buildRequester(String patientId){
-        return Requester.builder().identifier(buildPatientIdentifier(patientId)).name(patientId).build();
+        var patientIdentifier = buildPatientIdentifier(patientId);
+        return Requester.builder()
+                .identifier(patientIdentifier)
+                .identifiers(List.of(patientIdentifier))
+                .name(patientId)
+                .build();
     }
 
     private Identifier buildPatientIdentifier(String patientId){

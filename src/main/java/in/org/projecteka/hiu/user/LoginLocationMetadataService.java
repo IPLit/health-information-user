@@ -17,17 +17,24 @@ public class LoginLocationMetadataService {
     private static final String VISIT_LOCATION_TAG = "Visit Location";
     private static final String ATTR_ABDM_HFR_ID = "ABDM HFR ID";
     private static final String ATTR_ABDM_HFR_NAME = "ABDM HFR Name";
-    private final OpenMrsProperties openMrsProperties;
-    private WebClient webClient;
+    private OpenMrsProperties openMrsProperties = null;
+    private WebClient webClient = null;
+    private static boolean isInitialized = false;
     private static final Logger logger = LogManager.getLogger(LoginLocationMetadataService.class);
 
-
-    public LoginLocationMetadata fromLoginLocation(String loginLocationUuid) {
+    public void initLoginLocationMetadataService() {
         if (StringUtils.hasText(openMrsProperties.getBaseUrl())) {
             webClient = WebClient.builder().baseUrl(openMrsProperties.getBaseUrl())
             .defaultHeaders(headers -> headers.setBasicAuth(
                 openMrsProperties.getUsername(), openMrsProperties.getPassword()))
             .build();
+            isInitialized = true;
+        }
+    }
+
+    public LoginLocationMetadata fromLoginLocation(String loginLocationUuid) {
+        if (!isInitialized) {
+            initLoginLocationMetadataService();
         }
         if (!StringUtils.hasText(loginLocationUuid)) {
             return null;

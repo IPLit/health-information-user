@@ -12,8 +12,6 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.Valid;
 
-import org.springframework.util.StringUtils;
-
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -43,7 +41,7 @@ public class Consent {
                         conceptLookup.getPurposeDescription(getPurpose().getCode()),
                         getPurpose().getCode()),
                 getPatient(),
-                new HIU(hiuId, hiuName),
+                HIU.builder().id(hiuId).name(hiuName).build(),
                 Requester.builder().name(requesterId).build(),
                 getHiTypes(),
                 new in.org.projecteka.hiu.consent.model.consentmanager.Permission(
@@ -52,7 +50,7 @@ public class Consent {
                         getPermission().getDataEraseAt(),
                         ONE_HOUR,
                         getPermission().getDataGrantedOn()),
-                new HIP(hiuId), careContexts);
+                HIP.builder().id(hipId).build(), careContexts);
     }
 
     public ConsentRequest toConsentRequest(String id, String requesterId, String hiuId) {
@@ -65,7 +63,7 @@ public class Consent {
                 .permission(getPermission())
                 .status(ConsentStatus.REQUESTED)
                 .createdDate(ZonedDateTime.now(Utils.zOffset).toLocalDateTime())
-                .hip(new HIP(hiuId))
+                .hip(HIP.builder().id(hipId).build())
                 .careContexts(getCareContexts())
                 .build();
     }
@@ -88,7 +86,7 @@ public class Consent {
                         getPermission().getDataEraseAt(),
                         ONE_HOUR,
                         getPermission().getDataGrantedOn()))
-                .hip(new HIP(hiuId))
+                .hip(HIP.builder().id(hipId).build())
                 .build();
 
     }

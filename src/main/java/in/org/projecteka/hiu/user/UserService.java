@@ -8,6 +8,8 @@ import in.org.projecteka.hiu.consent.model.consentmanager.Requester;
 import lombok.AllArgsConstructor;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @AllArgsConstructor
 public class UserService {
 
@@ -17,6 +19,7 @@ public class UserService {
         return getIdentifierForUser(username).map(identifier -> Requester.builder()
                 .name(username)
                 .identifier(identifier)
+                .identifiers(List.of(identifier))
                 .build());
     }
 
