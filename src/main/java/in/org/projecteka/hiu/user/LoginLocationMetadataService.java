@@ -73,7 +73,7 @@ public class LoginLocationMetadataService {
 
     private Mono<JsonNode> getLocation(String locationUuid) {
         return webClient.get()
-                .uri("/ws/rest/v1/location/{uuid}?v=full", locationUuid)
+                .uri("/ws/rest/v1/location/"+locationUuid+"?v=full")
                 .retrieve()
                 .bodyToMono(JsonNode.class);
     }
