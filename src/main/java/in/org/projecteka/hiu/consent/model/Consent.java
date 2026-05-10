@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.validation.Valid;
 
@@ -31,12 +33,16 @@ public class Consent {
     private String hipId;
     private List<CareContext> careContexts;
 
+    private static final Logger logger = LoggerFactory.getLogger(Consent.class);
 
     public in.org.projecteka.hiu.consent.model.consentmanager.Consent to(String requesterId,
                                                                          String hiuId,
                                                                          String hiuName,
                                                                          ConceptLookup conceptLookup) {
-        var hip = hipId != null ? new HIP(hipId) : null;
+        logger.info("to1 consent request: {}", this);
+        var hip = hipId != null ? new HIP(hipId) : new HIP(hiuId);
+        logger.info("hip: {}", hip);
+        logger.info("hiuId: {}, hiuName: {}", hiuId, hiuName);
         return new in.org.projecteka.hiu.consent.model.consentmanager.Consent(
                 new in.org.projecteka.hiu.consent.model.consentmanager.Purpose(
                         conceptLookup.getPurposeDescription(getPurpose().getCode()),
@@ -55,7 +61,10 @@ public class Consent {
     }
 
     public ConsentRequest toConsentRequest(String id, String requesterId, String hiuId) {
-        var hip = hipId != null ? new HIP(hipId) : null;
+        logger.info("toConsentRequest consent request: {}", this);
+        var hip = hipId != null ? new HIP(hipId) : new HIP(hiuId);
+        logger.info("hip: {}", hip);
+        logger.info("hiuId: {}", hiuId);
         return ConsentRequest.builder()
                 .id(id)
                 .requesterId(requesterId)
@@ -73,7 +82,11 @@ public class Consent {
     public in.org.projecteka.hiu.consent.model.consentmanager.Consent to(Requester requester,
                                                                          String hiuId,
                                                                          ConceptLookup conceptLookup) {
-        var hip = hipId != null ? new HIP(hipId) : null;
+
+        logger.info("to2 consent request: {}", this);
+        var hip = hipId != null ? new HIP(hipId) : new HIP(hiuId);
+        logger.info("hip: {}", hip);
+        logger.info("hiuId: {}", hiuId);
         return in.org.projecteka.hiu.consent.model.consentmanager.Consent.builder()
                 .purpose(new in.org.projecteka.hiu.consent.model.consentmanager.Purpose(
                         conceptLookup.getPurposeDescription(getPurpose().getCode()),

@@ -20,9 +20,8 @@ public final class ConsentGatewayIdentityResolver {
                     data.getAbdmHfrId(),
                     StringUtils.hasText(data.getAbdmHfrName()) ? data.getAbdmHfrName() : hiuProperties.getName());
         }
-        var consentHipId = data.getConsent().getHipId();
-        var hiuId = (consentHipId != null && !consentHipId.isEmpty()) ? consentHipId : (StringUtils.hasText(data.getAbdmHfrId()) ? data.getAbdmHfrId() : hiuProperties.getId());
-        var hiuName = (consentHipId != null && !consentHipId.isEmpty()) ? consentHipId : (StringUtils.hasText(data.getAbdmHfrName()) ? data.getAbdmHfrName() : hiuProperties.getName());
+        var hiuId = StringUtils.hasText(data.getAbdmHfrId()) ? data.getAbdmHfrId() : hiuProperties.getId();
+        var hiuName = StringUtils.hasText(data.getAbdmHfrName()) ? data.getAbdmHfrName() : hiuProperties.getName();
         return new ResolvedHiuIdentity(hiuId, hiuName);
     }
 

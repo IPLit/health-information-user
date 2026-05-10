@@ -216,7 +216,7 @@ public class PatientConsentService {
                 .build();
         var hiuConsentRequest = hiRequest.getConsent()
                 .toConsentRequest(gatewayRequestId.toString(), requester.getName(), identity.getHiuId());
-        return gatewayServiceClient.sendConsentRequest(getCmSuffix(patientId), consentRequest, gatewayRequestId.toString(), hiuProperties.getId())
+        return gatewayServiceClient.sendConsentRequest(getCmSuffix(patientId), consentRequest, gatewayRequestId.toString(), identity.getHiuId())
                 .then(defer(() -> consentRepository.insertConsentRequestToGateway(hiuConsentRequest)));
     }
 
