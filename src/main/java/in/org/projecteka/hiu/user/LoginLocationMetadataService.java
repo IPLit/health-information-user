@@ -82,7 +82,7 @@ public class LoginLocationMetadataService {
 
     private boolean isVisitLocation(JsonNode location) {
         var tags = location.path("tags");
-        if (!tags.isArray()) {
+        if (!tags.isArray() || tags.isEmpty()) {
             return false;
         }
         for (JsonNode tag : tags) {
@@ -101,8 +101,8 @@ public class LoginLocationMetadataService {
 
     private Optional<String> attributeValue(JsonNode location, String attributeTypeName) {
         var attributes = location.path("attributes");
-        if (!attributes.isArray()) {
-            return null;
+        if (!attributes.isArray() || attributes.isEmpty()) {
+            return Optional.empty();
         }
         for (JsonNode attribute : attributes) {
             var typeDisplay = attribute.path("display");
@@ -118,7 +118,7 @@ public class LoginLocationMetadataService {
                 }
             }
         }
-        return null;
+        return Optional.empty();
     }
 
 }
