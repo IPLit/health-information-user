@@ -108,7 +108,7 @@ public class HealthDataProcessor {
 
     private void processEntries(DataContext context) {
         try {
-            logger.warn(String.format(
+            logger.info(String.format(
                     "Received data from HIP for transaction: %s. Number of entries: %d. Trying to process data.",
                     context.getTransactionId(), context.getNumberOfEntries()));
             updateDataProcessStatus(context, "", HealthInfoStatus.PROCESSING, null);
@@ -293,10 +293,10 @@ public class HealthDataProcessor {
             Function<ResourceType, HITypeResourceProcessor> resourceProcessor = this::identifyResourceProcessor;
             BundleContext bundleContext = new BundleContext(bundle, resourceProcessor);
             try {
-                logger.debug("Processing bundle id: {}", bundle.getId());
+                logger.info("Processing bundle id: {}", bundle.getId());
                 bundle.getEntry().forEach(bundleEntry -> {
                     ResourceType resourceType = bundleEntry.getResource().getResourceType();
-                    logger.debug("bundle entry resource type:  {}", resourceType);
+                    logger.info("bundle entry resource type:  {}", resourceType);
                     HITypeResourceProcessor processor = identifyResourceProcessor(resourceType);
                     if (processor != null) {
                         processor.process(bundleEntry.getResource(), context, bundleContext, null);

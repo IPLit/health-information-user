@@ -48,12 +48,11 @@ public class ConsentController {
                 .map(securityContext -> (Caller) securityContext.getAuthentication().getPrincipal())
                 .map(caller -> {
                     var activeSessionContext = activeSessionContextService.fromCaller(caller);
-                    logger.debug("activeSessionContext {}", activeSessionContext);
+                    logger.info("activeSessionContext {}", activeSessionContext);
                     activeSessionContext = activeSessionContext==null ? activeSessionContextService.current().block() : activeSessionContext;
-                    logger.debug("activeSessionContext {}", activeSessionContext);
+                    logger.info("activeSessionContext {}", activeSessionContext);
                     consentRequestData.applyActiveSessionMetadata(activeSessionContext);
-                    consentRequestData.getConsent().setHipId(activeSessionContext.getEffectiveHiuId());
-                    logger.debug("consentRequestData {}", consentRequestData);
+                    logger.info("consentRequestData {}", consentRequestData);
                     return caller.getUsername();
                 })
                 .flatMap(userService::toRequester)

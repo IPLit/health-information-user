@@ -33,8 +33,6 @@ public class JWTGenerator {
                 .claim("isVerified", user.isVerified())
                 .claim("exp", Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli());
 
-        Optional.ofNullable(loginLocationMetadata).map(locationMetadata -> locationMetadata.getVisitLocationUuid())
-                .ifPresent(value -> claimsBuilder.claim("visitLocationUuid", value));
         Optional.ofNullable(loginLocationMetadata).map(locationMetadata -> locationMetadata.getAbdmHfrId())
                 .ifPresent(value -> claimsBuilder.claim("abdmHfrId", value));
         Optional.ofNullable(loginLocationMetadata).map(locationMetadata -> locationMetadata.getAbdmHfrName())

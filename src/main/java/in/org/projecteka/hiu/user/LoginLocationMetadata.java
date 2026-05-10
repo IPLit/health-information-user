@@ -6,7 +6,6 @@ import lombok.Value;
 @Value
 @Builder
 public class LoginLocationMetadata {
-    String visitLocationUuid;
     String abdmHfrId;
     String abdmHfrName;
 }

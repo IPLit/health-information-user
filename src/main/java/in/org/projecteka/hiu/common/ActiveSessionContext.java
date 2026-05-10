@@ -27,7 +27,6 @@ public class ActiveSessionContext {
                 .defaultHiuName(hiuProperties.getName())
                 .abdmHfrId(caller.getAbdmHfrId().orElse(null))
                 .abdmHfrName(caller.getAbdmHfrName().orElse(null))
-                .visitLocationUuid(caller.getVisitLocationUuid().orElse(null))
                 .build();
     }
 

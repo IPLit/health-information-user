@@ -27,7 +27,7 @@ public class DataContext {
 
     public Path getLocalStoragePath() {
         if (dataFilePath.endsWith("/")) {
-        return dataFilePath.getParent();
+            return dataFilePath.getParent();
         }
         return dataFilePath;
     }

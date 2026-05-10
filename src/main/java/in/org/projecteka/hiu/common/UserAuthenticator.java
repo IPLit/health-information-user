@@ -45,7 +45,6 @@ public class UserAuthenticator implements Authenticator {
                     false,
                     jsonObject.getAsString("role"),
                     isVerified,
-                    jsonObject.getAsString("visitLocationUuid"),
                     jsonObject.getAsString("abdmHfrId"),
                     jsonObject.getAsString("abdmHfrName")));
         } catch (ParseException | JOSEException e) {

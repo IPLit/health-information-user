@@ -36,19 +36,18 @@ public class Consent {
     private static final Logger logger = LoggerFactory.getLogger(Consent.class);
 
     public in.org.projecteka.hiu.consent.model.consentmanager.Consent to(String requesterId,
-                                                                         String hiuId,
-                                                                         String hiuName,
+                                                                         String hiuId, String hiuName,
                                                                          ConceptLookup conceptLookup) {
         logger.info("to1 consent request: {}", this);
-        var hip = hipId != null ? new HIP(hipId) : new HIP(hiuId);
+        var hip = hipId != null ? new HIP(hipId) : null;
         logger.info("hip: {}", hip);
-        logger.info("hiuId: {}, hiuName: {}", hiuId, hiuName);
+        logger.info("hiuId: {}", hiuId);
         return new in.org.projecteka.hiu.consent.model.consentmanager.Consent(
                 new in.org.projecteka.hiu.consent.model.consentmanager.Purpose(
                         conceptLookup.getPurposeDescription(getPurpose().getCode()),
                         getPurpose().getCode()),
                 getPatient(),
-                HIU.builder().id(hiuId).name(hiuName).build(),
+                new HIU(hiuId, hiuName),
                 Requester.builder().name(requesterId).build(),
                 getHiTypes(),
                 new in.org.projecteka.hiu.consent.model.consentmanager.Permission(
@@ -62,7 +61,7 @@ public class Consent {
 
     public ConsentRequest toConsentRequest(String id, String requesterId, String hiuId) {
         logger.info("toConsentRequest consent request: {}", this);
-        var hip = hipId != null ? new HIP(hipId) : new HIP(hiuId);
+        var hip = hipId != null ? new HIP(hipId) : null;
         logger.info("hip: {}", hip);
         logger.info("hiuId: {}", hiuId);
         return ConsentRequest.builder()
@@ -84,7 +83,7 @@ public class Consent {
                                                                          ConceptLookup conceptLookup) {
 
         logger.info("to2 consent request: {}", this);
-        var hip = hipId != null ? new HIP(hipId) : new HIP(hiuId);
+        var hip = hipId != null ? new HIP(hipId) : null;
         logger.info("hip: {}", hip);
         logger.info("hiuId: {}", hiuId);
         return in.org.projecteka.hiu.consent.model.consentmanager.Consent.builder()

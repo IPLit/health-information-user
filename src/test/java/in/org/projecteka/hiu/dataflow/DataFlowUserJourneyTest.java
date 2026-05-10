@@ -173,7 +173,7 @@ class DataFlowUserJourneyTest {
         consentDetailsMap.put("consentExpiryDate", "9999-01-15T08:47:48.000Z");
         consentDetails.add(consentDetailsMap);
         var token = randomString();
-        var caller = new Caller("testUser", false, Role.ADMIN.toString(), true, null, null, null);
+        var caller = new Caller("testUser", false, Role.ADMIN.toString(), true, null, null);
         when(authenticator.verify(token)).thenReturn(Mono.just(caller));
         Map<String, Object> healthInfo = new HashMap<>();
         String content = "Some dummy content";
@@ -217,7 +217,7 @@ class DataFlowUserJourneyTest {
         var hipId = "10000005";
         var hipName = "Max health care";
         var token = randomString();
-        var caller = new Caller("testUser", false, Role.ADMIN.toString(), true, null, null, null);
+        var caller = new Caller("testUser", false, Role.ADMIN.toString(), true, null, null);
         when(authenticator.verify(token)).thenReturn(Mono.just(caller));
         List<Map<String, String>> consentDetails = new ArrayList<>();
         Map<String, String> consentDetailsMap = new HashMap<>();
@@ -260,7 +260,7 @@ class DataFlowUserJourneyTest {
         consentDetailsMap.put("requester", "tempUser");
         consentDetails.add(consentDetailsMap);
         var token = randomString();
-        var caller = new Caller("testUser", false, Role.ADMIN.toString(), true, null, null, null);
+        var caller = new Caller("testUser", false, Role.ADMIN.toString(), true, null, null);
         when(authenticator.verify(token)).thenReturn(Mono.just(caller));
         var errorResponse = new ErrorRepresentation(new Error(
                 ErrorCode.UNAUTHORIZED_REQUESTER,

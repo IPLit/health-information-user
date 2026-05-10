@@ -64,8 +64,10 @@ public class LoginLocationMetadataService {
     }
 
     private LoginLocationMetadata extractMetadata(JsonNode visitLocation) {
+        if (visitLocation==null) {
+            return null;
+        }
         return LoginLocationMetadata.builder()
-                .visitLocationUuid(visitLocation.path("uuid").asText())
                 .abdmHfrId(attributeValue(visitLocation, ATTR_ABDM_HFR_ID).orElse(null))
                 .abdmHfrName(attributeValue(visitLocation, ATTR_ABDM_HFR_NAME).orElse(null))
                 .build();
