@@ -88,7 +88,10 @@ public class ConsentController {
                     Optional<String> correlationId = Optional.ofNullable(MDC.get(CORRELATION_ID));
                     return correlationId.map(id -> ctx.put(CORRELATION_ID, id))
                             .orElseGet(() -> ctx.put(CORRELATION_ID, UUID.randomUUID().toString()));
-                }).subscribe();
+                })
+                .subscribe(
+                        null,
+                        error -> logger.error("Async handling of HIU consent notification failed", error));
         return Mono.just(new ResponseEntity<>(HttpStatus.ACCEPTED));
     }
 
@@ -100,7 +103,10 @@ public class ConsentController {
                     Optional<String> correlationId = Optional.ofNullable(MDC.get(CORRELATION_ID));
                     return correlationId.map(id -> ctx.put(CORRELATION_ID, id))
                             .orElseGet(() -> ctx.put(CORRELATION_ID, UUID.randomUUID().toString()));
-                }).subscribe();
+                })
+                .subscribe(
+                        null,
+                        error -> logger.error("Async handling of consent artefact callback failed", error));
         return Mono.just(new ResponseEntity<>(HttpStatus.ACCEPTED));
     }
 
@@ -112,7 +118,10 @@ public class ConsentController {
                     Optional<String> correlationId = Optional.ofNullable(MDC.get(CORRELATION_ID));
                     return correlationId.map(id -> ctx.put(CORRELATION_ID, id))
                             .orElseGet(() -> ctx.put(CORRELATION_ID, UUID.randomUUID().toString()));
-                }).subscribe();
+                })
+                .subscribe(
+                        null,
+                        error -> logger.error("Async handling of consent request status callback failed", error));
         return Mono.just(new ResponseEntity<>(HttpStatus.ACCEPTED));
     }
 }

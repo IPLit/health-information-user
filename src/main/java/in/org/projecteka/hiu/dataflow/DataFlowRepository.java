@@ -136,7 +136,8 @@ public class DataFlowRepository {
     }
 
     public Mono<DataFlowRequestKeyMaterial> getKeys(String transactionId) {
-        return Mono.create(monoSink -> readOnlyClient.preparedQuery(GET_KEY_FOR_ID)
+        // Use primary: keys are written in the same flow as transaction_id; replica lag causes false "not found".
+        return Mono.create(monoSink -> readWriteClient.preparedQuery(GET_KEY_FOR_ID)
                 .execute(Tuple.of(transactionId),
                         handler -> {
                             if (handler.failed()) {
@@ -177,7 +178,8 @@ public class DataFlowRepository {
     }
 
     public Mono<String> getConsentId(String transactionId) {
-        return Mono.create(monoSink -> readOnlyClient.preparedQuery(SELECT_CONSENT_ID)
+        // Use primary: transaction_id is set on-request just before HIP may POST transfer; replica lag yields empty rows.
+        return Mono.create(monoSink -> readWriteClient.preparedQuery(SELECT_CONSENT_ID)
                 .execute(Tuple.of(transactionId),
                         handler -> {
                             if (handler.failed()) {
@@ -187,7 +189,9 @@ public class DataFlowRepository {
                             }
                             var iterator = handler.result().iterator();
                             if (!iterator.hasNext()) {
-                                logger.error(format("Could not find consent artefact id for %s", transactionId));
+                                logger.error(format(
+                                        "No data_flow_request row for transaction_id=%s (on-request may be missing, out of order, or wrong id)",
+                                        transactionId));
                                 monoSink.error(dbOperationFailure("Failed to get consent Id from transaction Id"));
                                 return;
                             }
@@ -197,7 +201,8 @@ public class DataFlowRepository {
 
 
     public Mono<Map<String, Object>> retrieveDataFlowRequest(String transactionId) {
-        return Mono.create(monoSink -> readOnlyClient.preparedQuery(SELECT_DATA_FLOW_REQUEST_FOR_TRANSACTION)
+        // Use primary: same read-after-write window as getConsentId when data arrives right after on-request.
+        return Mono.create(monoSink -> readWriteClient.preparedQuery(SELECT_DATA_FLOW_REQUEST_FOR_TRANSACTION)
                 .execute(Tuple.of(transactionId),
                         handler -> {
                             if (handler.failed()) {

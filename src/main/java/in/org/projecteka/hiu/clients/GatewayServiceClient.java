@@ -20,6 +20,7 @@ import java.util.UUID;
 
 import static in.org.projecteka.hiu.common.Constants.*;
 import static in.org.projecteka.hiu.consent.ConsentException.creationFailed;
+import static in.org.projecteka.hiu.consent.ConsentException.fetchConsentArtefactFailed;
 import static java.time.Duration.ofMillis;
 import static java.util.function.Predicate.not;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -83,7 +84,12 @@ public class GatewayServiceClient {
                         .header(X_HIU_ID, StringUtils.isNotBlank(hiuId) ? hiuId : "") // hiuProperties.getId()
                         .body(just(request), ConsentArtefactRequest.class)
                         .retrieve()
-                        .onStatus(not(HttpStatus::is2xxSuccessful), clientResponse -> error(creationFailed()))
+                        .onStatus(not(HttpStatus::is2xxSuccessful),
+                                clientResponse -> clientResponse.bodyToMono(String.class)
+                                        .doOnNext(body -> logger.error(
+                                                "Consent artefact fetch rejected: status={} body={}",
+                                                clientResponse.statusCode(), body))
+                                        .then(error(fetchConsentArtefactFailed())))
                         .toBodilessEntity()
                         .timeout(ofMillis(gatewayProperties.getRequestTimeout())))
                 .then();

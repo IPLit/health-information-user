@@ -19,6 +19,11 @@ public class ConsentException extends Throwable {
         return new ConsentException(ErrorCode.FAILED_TO_INITIATE_DATA_FLOW_REQUEST, failedToInitiateDataFlowRequest);
     }
 
+    public static ConsentException fetchConsentArtefactFailed() {
+        final String msg = "Failed to fetch consent artefact from consent manager";
+        return new ConsentException(ErrorCode.FETCH_CONSENT_ARTEFACT_FAILED, msg);
+    }
+
     private enum ErrorCode {
         CREATION_FAILED,
         FETCH_CONSENT_ARTEFACT_FAILED,

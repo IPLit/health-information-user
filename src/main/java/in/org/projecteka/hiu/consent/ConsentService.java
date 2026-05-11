@@ -16,6 +16,7 @@ import in.org.projecteka.hiu.consent.model.ConsentStatusRequest;
 import in.org.projecteka.hiu.consent.model.GatewayConsentArtefactResponse;
 import in.org.projecteka.hiu.consent.model.HiuConsentNotificationRequest;
 import in.org.projecteka.hiu.consent.model.consentmanager.ConsentRequest;
+import in.org.projecteka.hiu.consent.model.consentmanager.HIP;
 import in.org.projecteka.hiu.consent.model.consentmanager.HIU;
 import in.org.projecteka.hiu.consent.model.consentmanager.Requester;
 import in.org.projecteka.hiu.patient.PatientService;
@@ -130,6 +131,8 @@ public class ConsentService {
                 .consent(reqInfo)
                 .build();
         var hiuConsentRequest = hiRequest.getConsent().toConsentRequest(gatewayRequestId.toString(), requester.getName(), identity.getHiuId());
+        logger.info("hiuConsentRequest: {}", hiuConsentRequest);
+        hiuConsentRequest.setHip(new HIP(identity.getHiuId()));
         return consentRepository.insertConsentRequestToGateway(hiuConsentRequest)
                 .then(gatewayServiceClient.sendConsentRequest(getCmSuffix(patientId), consentRequest, gatewayRequestId.toString(), identity.getHiuId()));
     }
