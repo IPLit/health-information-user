@@ -24,8 +24,7 @@ public class ConsentRequestData {
     private String abdmHfrId;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String abdmHfrName;
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private String visitLocationUuid;
+ 
 
     public void applyActiveSessionMetadata(ActiveSessionContext context) {
         if (context == null) {
@@ -36,9 +35,6 @@ public class ConsentRequestData {
         }
         if (StringUtils.hasText(context.getEffectiveHiuName())) {
             this.abdmHfrName = context.getEffectiveHiuName();
-        }
-        if (StringUtils.hasText(context.getVisitLocationUuid())) {
-            this.visitLocationUuid = context.getVisitLocationUuid();
         }
     }
 }

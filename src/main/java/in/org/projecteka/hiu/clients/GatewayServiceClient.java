@@ -8,6 +8,8 @@ import in.org.projecteka.hiu.consent.model.ConsentArtefactRequest;
 import in.org.projecteka.hiu.consent.model.consentmanager.ConsentOnNotifyRequest;
 import in.org.projecteka.hiu.consent.model.consentmanager.ConsentRequest;
 import in.org.projecteka.hiu.patient.model.PatientStatusNotification;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
@@ -78,7 +80,7 @@ public class GatewayServiceClient {
                         .header(CORRELATION_ID, MDC.get(CORRELATION_ID))
                         .header(REQUEST_ID, requestId.toString())
                         .header(TIMESTAMP, Utils.getISOTimestamp())
-                        .header(X_HIU_ID, hiuId) // hiuProperties.getId()
+                        .header(X_HIU_ID, StringUtils.isNotBlank(hiuId) ? hiuId : "") // hiuProperties.getId()
                         .body(just(request), ConsentArtefactRequest.class)
                         .retrieve()
                         .onStatus(not(HttpStatus::is2xxSuccessful), clientResponse -> error(creationFailed()))

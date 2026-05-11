@@ -15,19 +15,20 @@ public class Gateway {
 
     private final GatewayProperties gatewayProperties;
     private final GatewayAuthenticationClient gatewayAuthenticationClient;
-    private CacheAdapter<String, String> accessTokenCache;
+    private final CacheAdapter<String, String> accessTokenCache;
 
     public Mono<String> token() {
         return accessTokenCache.get("hiu:gateway:accessToken")
-                .switchIfEmpty(tokenUsingSecret())
-                .doOnError(error -> logger.error("Error getting token from cache or secret "));
+                .switchIfEmpty(Mono.defer(this::tokenUsingSecret))
+                .doOnError(error -> logger.error("Error getting token from cache or secret "))
+                .map(token -> token);
     }
 
     private Mono<String> tokenUsingSecret() {
         return gatewayAuthenticationClient.getTokenFor(gatewayProperties.getClientId(), gatewayProperties.getClientSecret())
                 .filter(tokenVal -> tokenVal != null && tokenVal.getBearerToken() != null && !tokenVal.getBearerToken().isEmpty())
                 .flatMap(tokenVal -> {
-                    logger.debug("Gateway access token generated! " + tokenVal.getBearerToken());
+                    logger.info("Gateway access token generated! " + tokenVal.getBearerToken());
                     return accessTokenCache.put("hiu:gateway:accessToken", tokenVal.getBearerToken())
                             .thenReturn(tokenVal.getBearerToken());
                 });

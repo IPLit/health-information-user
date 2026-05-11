@@ -19,7 +19,6 @@ public class ActiveSessionContext {
     String defaultHiuName;
     String abdmHfrId;
     String abdmHfrName;
-    String visitLocationUuid;
 
     public static ActiveSessionContext from(Caller caller, HiuProperties hiuProperties) {
         return ActiveSessionContext.builder()

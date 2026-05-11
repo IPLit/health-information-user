@@ -60,7 +60,7 @@ public class GrantedConsentTask extends ConsentTask {
                 //        consentRequestId).thenReturn(consentRequest))
                 .map(consentRequest -> {
                     var cmSuffix = getCmSuffix(consentRequest.getPatient().getId());
-                    var hiuId = consentRequest.getHip().getId();
+                    var hiuId = consentRequest.getHip()!=null ? consentRequest.getHip().getId() : "";
                     return Pair.of(cmSuffix, hiuId);
                 })
                 .flatMap(pair -> gatewayClient.sendConsentOnNotify(pair.getFirst(), buildConsentOnNotifyRequestForReference(consentNotification.getConsentArtefacts(), 
