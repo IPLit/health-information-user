@@ -12,8 +12,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
-import static in.org.projecteka.hiu.clients.PatientSearchThrowable.notFound;
-import static in.org.projecteka.hiu.clients.PatientSearchThrowable.unknown;
 import static in.org.projecteka.hiu.common.Constants.*;
 import static java.time.Duration.ofMillis;
 import static java.util.function.Predicate.not;
@@ -50,8 +48,14 @@ public class AbhaAddressServiceClient {
                         .header(TIMESTAMP, Utils.getISOTimestamp())
                         .body(just(request), FindPatientRequest.class)
                         .retrieve()
-                        .onStatus(httpStatus -> httpStatus == BAD_REQUEST, clientResponse -> error(notFound()))
-                        .onStatus(not(HttpStatus::is2xxSuccessful), clientResponse -> error(unknown()))
+                        .onStatus(httpStatus -> httpStatus == BAD_REQUEST,
+                            clientResponse -> clientResponse.bodyToMono(String.class)
+                                    .doOnNext(logger::error)
+                                    .then(error(new Throwable("Abha address not found"))))
+                        .onStatus(not(HttpStatus::is2xxSuccessful),
+                            clientResponse -> clientResponse.bodyToMono(String.class)
+                                    .doOnNext(logger::error)
+                                    .then(error(new Throwable("Unknown error occurred"))))
                         .bodyToMono(AbhaAddressSearchResponse.class)
                         .timeout(ofMillis(gatewayProperties.getRequestTimeout())));
     }
