@@ -1,21 +1,7 @@
 <configuration>
-    <springProfile name="!local">
-        <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                <includeMdcKeyName>CORRELATION-ID</includeMdcKeyName>
-            </encoder>
-        </appender>
-        <root level="INFO">
-            <appender-ref ref="console"/>
-        </root>
-    </springProfile>
-    <logger name="org.springframework">
-        <level value="warn"/>
-    </logger>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="in.org.projecteka.hiu.patient.PatientService" level="DEBUG"/>
 
-    <logger name="in.org.projecteka.hiu.patient.PatientService">
-        <level value="debug"/>
-    </logger>
     <springProfile name="local">
         <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
             <layout class="ch.qos.logback.classic.PatternLayout">
@@ -23,6 +9,17 @@
                     %black(%d{ISO8601}) %highlight(%-5level) [%blue(%t)] %yellow(%C{1.}) %cyan([%X{CORRELATION-ID}]): %msg%n%throwable
                 </Pattern>
             </layout>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="console"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="!local">
+        <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] %logger{40} [%X{CORRELATION-ID}] %msg%n</pattern>
+            </encoder>
         </appender>
         <root level="INFO">
             <appender-ref ref="console"/>
