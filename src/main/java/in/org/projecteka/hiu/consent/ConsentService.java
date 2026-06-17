@@ -131,7 +131,7 @@ public class ConsentService {
                 .consent(reqInfo)
                 .build();
         var hiuConsentRequest = hiRequest.getConsent().toConsentRequest(gatewayRequestId.toString(), requester.getName(), identity.getHiuId());
-        logger.info("hiuConsentRequest: {}", hiuConsentRequest);
+        logger.debug("hiuConsentRequest: {}", hiuConsentRequest);
         hiuConsentRequest.setHip(new HIP(identity.getHiuId()));
         return consentRepository.insertConsentRequestToGateway(hiuConsentRequest)
                 .then(gatewayServiceClient.sendConsentRequest(getCmSuffix(patientId), consentRequest, gatewayRequestId.toString(), identity.getHiuId()));

@@ -153,7 +153,7 @@ public class SecurityConfiguration {
             }
 
             var token = exchange.getRequest().getHeaders().getFirst(AUTHORIZATION);
-            logger.info("Received request " + exchange.getRequest().getURI() + " with token " + token);
+            logger.debug("Received request " + exchange.getRequest().getURI() + " with token " + token);
 
             if (isEmpty(token)) {
                 return error(unauthorizedRequester());

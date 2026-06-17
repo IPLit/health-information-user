@@ -252,8 +252,8 @@ public class HealthInfoManager {
     }
 
     private boolean isValidRequester(String requesterId, Map<String, String> consentDetail) {
-        logger.info("isValidRequester requesterId: {}", requesterId);
-        logger.info("isValidRequester consentDetail: {}", consentDetail);
+        logger.debug("isValidRequester requesterId: {}", requesterId);
+        logger.debug("isValidRequester consentDetail: {}", consentDetail);
         if (requesterId == null || requesterId.isBlank()) {
             return false;
         }

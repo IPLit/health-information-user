@@ -274,7 +274,7 @@ public class DataFlowService {
                 for (int indexProcessed = 0; entries!=null && indexProcessed < entries.size(); indexProcessed++) {
                     Entry entry = entries.get(indexProcessed);
                     int currentIndex = indexProcessed + 1;
-                    logger.info("Processing entry {}/{} for care-context: {}", currentIndex,
+                    logger.debug("Processing entry {}/{} for care-context: {}", currentIndex,
                         context.getNumberOfEntries(), entry.getCareContextReference());
                     Entry entryToProcess = entry;
                     if (hasLink(entry)) {
@@ -296,7 +296,7 @@ public class DataFlowService {
                                         .media(entry.getMedia())
                                         .careContextReference(entry.getCareContextReference())
                                         .build();
-                                logger.info("Fetched content for care-context: {}", entry.getCareContextReference());
+                                logger.debug("Fetched content for care-context: {}", entry.getCareContextReference());
                                 var result = processEntryContent(context, processedEntry, keyMaterial);
                                 if (result.hasErrors()) {
                                     isError = true;
@@ -309,7 +309,7 @@ public class DataFlowService {
                                     logger.error("Errors in processing entry for care-context: {}. Errors: {}",
                                             entry.getCareContextReference(), String.join(",", result.getErrors()));
                                 } else {
-                                    logger.info("Successfully processed entry for care-context: {}", entry.getCareContextReference());
+                                    logger.debug("Successfully processed entry for care-context: {}", entry.getCareContextReference());
                                     context.addTrackedResources(result.getTrackedResources());
                                     Optional<Pair<String, String>> originIdAndName = identifyOrigin(result.getOrigins());
                                     String originId = originIdAndName.isPresent() ? originIdAndName.get().getFirst() : context.getHipId();
@@ -323,7 +323,7 @@ public class DataFlowService {
                                             originId)
                                     .doOnSuccess(dataResult -> {
                                         statusResponses.add(getStatusResponse(entry, HiStatus.OK, "Data received successfully"));
-                                        logger.info("Processed entry for care-context: {}", entry.getCareContextReference());
+                                        logger.debug("Processed entry for care-context: {}", entry.getCareContextReference());
                                     }).subscribe();
                                 }
                             }
@@ -342,7 +342,7 @@ public class DataFlowService {
                             logger.error("Errors in processing entry for care-context: {}. Errors: {}",
                                     entry.getCareContextReference(), String.join(",", result.getErrors()));
                         } else {
-                            logger.info("Successfully processed entry for care-context: {}", entry.getCareContextReference());
+                            logger.debug("Successfully processed entry for care-context: {}", entry.getCareContextReference());
                             context.addTrackedResources(result.getTrackedResources());
                             Optional<Pair<String, String>> originIdAndName = identifyOrigin(result.getOrigins());
                             String originId = originIdAndName.isPresent() ? originIdAndName.get().getFirst() : context.getHipId();
@@ -356,7 +356,7 @@ public class DataFlowService {
                                     originId)
                             .doOnSuccess(dataResult -> {
                                 statusResponses.add(getStatusResponse(entry, HiStatus.OK, "Data received successfully"));
-                                logger.info("Processed entry for care-context: {}", entry.getCareContextReference());
+                                logger.debug("Processed entry for care-context: {}", entry.getCareContextReference());
                             }).subscribe();
                         }
                     }
@@ -460,7 +460,7 @@ public class DataFlowService {
     private ProcessedEntry processEntryContent(DataContext context,
                                                Entry entry,
                                                DataFlowRequestKeyMaterial keyMaterial) {
-        logger.info("Processing entry for care-context: {} with media {}", entry.getCareContextReference(), entry.getMedia());
+        logger.debug("Processing entry for care-context: {} with media {}", entry.getCareContextReference(), entry.getMedia());
         
         var mayBeParser = getEntryParser(entry.getMedia());
         return mayBeParser.map(parser -> {
@@ -479,7 +479,7 @@ public class DataFlowService {
                                                   DataFlowRequestKeyMaterial keyMaterial,
                                                   IParser parser) {
 
-        logger.info("Parser {} found for Entry with media type: {}", parser.getClass().getName(), entry.getMedia());
+        logger.debug("Parser {} found for Entry with media type: {}", parser.getClass().getName(), entry.getMedia());
 
         ProcessedEntry result = new ProcessedEntry();
         String decryptedContent;
@@ -500,16 +500,16 @@ public class DataFlowService {
         Function<ResourceType, HITypeResourceProcessor> resourceProcessor = this::identifyResourceProcessor;
         BundleContext bundleContext = new BundleContext(bundle, resourceProcessor);
         try {
-            logger.info("Processing bundle id: {} with timestamp {} with resourceProcessor {}", bundle.getId(), bundle.getTimestamp(), resourceProcessor.getClass().getName());
+            logger.debug("Processing bundle id: {} with timestamp {} with resourceProcessor {}", bundle.getId(), bundle.getTimestamp(), resourceProcessor.getClass().getName());
             if (bundle.getTimestamp() == null) {
                 bundle.setTimestamp(new Date());
             }
             bundle.getEntry().forEach(bundleEntry -> {
                 ResourceType resourceType = bundleEntry.getResource().getResourceType();
-                logger.info("bundle entry resource type: {}", resourceType);
+                logger.debug("bundle entry resource type: {}", resourceType);
                 HITypeResourceProcessor processor = identifyResourceProcessor(resourceType);
                 if (processor != null) {
-                    logger.info("bundle entry resource type {} processing... with {}", resourceType, processor.getClass().getName());
+                    logger.debug("bundle entry resource type {} processing... with {}", resourceType, processor.getClass().getName());
                     processor.process(bundleEntry.getResource(), context, bundleContext, null);
                 }
             });

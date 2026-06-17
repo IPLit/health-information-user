@@ -38,10 +38,10 @@ public class Consent {
     public in.org.projecteka.hiu.consent.model.consentmanager.Consent to(String requesterId,
                                                                          String hiuId, String hiuName,
                                                                          ConceptLookup conceptLookup) {
-        logger.info("to1 consent request: {}", this);
+        logger.debug("to1 consent request: {}", this);
         var hip = hipId != null ? new HIP(hipId) : null;
-        logger.info("hip: {}", hip);
-        logger.info("hiuId: {}", hiuId);
+        logger.debug("hip: {}", hip);
+        logger.debug("hiuId: {}", hiuId);
         return new in.org.projecteka.hiu.consent.model.consentmanager.Consent(
                 new in.org.projecteka.hiu.consent.model.consentmanager.Purpose(
                         conceptLookup.getPurposeDescription(getPurpose().getCode()),
@@ -60,10 +60,10 @@ public class Consent {
     }
 
     public ConsentRequest toConsentRequest(String id, String requesterId, String hiuId) {
-        logger.info("toConsentRequest consent request: {}", this);
+        logger.debug("toConsentRequest consent request: {}", this);
         var hip = hipId != null ? new HIP(hipId) : null;
-        logger.info("hip: {}", hip);
-        logger.info("hiuId: {}", hiuId);
+        logger.debug("hip: {}", hip);
+        logger.debug("hiuId: {}", hiuId);
         return ConsentRequest.builder()
                 .id(id)
                 .requesterId(requesterId)
@@ -82,10 +82,10 @@ public class Consent {
                                                                          String hiuId,
                                                                          ConceptLookup conceptLookup) {
 
-        logger.info("to2 consent request: {}", this);
+        logger.debug("to2 consent request: {}", this);
         var hip = hipId != null ? new HIP(hipId) : null;
-        logger.info("hip: {}", hip);
-        logger.info("hiuId: {}", hiuId);
+        logger.debug("hip: {}", hip);
+        logger.debug("hiuId: {}", hiuId);
         return in.org.projecteka.hiu.consent.model.consentmanager.Consent.builder()
                 .purpose(new in.org.projecteka.hiu.consent.model.consentmanager.Purpose(
                         conceptLookup.getPurposeDescription(getPurpose().getCode()),
