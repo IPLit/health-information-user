@@ -102,13 +102,7 @@ public class PatientService {
                 .flatMap(response -> hasBahmniPatient(response)
                         ? Mono.<Void>empty()
                         : patientNotFoundInBahmni(id))
-                .switchIfEmpty(patientNotFoundInBahmni(id))
-                .onErrorResume(ClientError.class, Mono::error)
                 .onErrorResume(WebClientResponseException.class, e -> {
-                    logger.error("Bahmni patient search failed for identifier: {} - {}", id, e.getMessage());
-                    return Mono.error(ClientError.networkServiceCallFailed());
-                })
-                .onErrorResume(e -> {
                     logger.error("Bahmni patient search failed for identifier: {} - {}", id, e.getMessage());
                     return Mono.error(ClientError.networkServiceCallFailed());
                 });
