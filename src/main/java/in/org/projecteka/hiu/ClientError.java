@@ -116,8 +116,12 @@ public class ClientError extends Throwable {
     }
 
     public static ClientError patientNotFound() {
+        return patientNotFound("Patient not found");
+    }
+
+    public static ClientError patientNotFound(String message) {
         return new ClientError(NOT_FOUND,
-                new ErrorRepresentation(new Error(ErrorCode.PATIENT_NOT_FOUND, "Patient not found")));
+                new ErrorRepresentation(new Error(ErrorCode.PATIENT_NOT_FOUND, message)));
     }
 
     public static ClientError unAuthorized() {

@@ -90,7 +90,11 @@ public class GlobalExceptionHandler extends AbstractErrorWebExceptionHandler {
                 request.path(),
                 request.method(),
                 error.getMessage());
-        logger.error(message, error);
+        if (error instanceof ClientError) {
+            logger.error(message);
+        } else {
+            logger.error(message, error);
+        }
         MDC.clear();
         return error;
     }}

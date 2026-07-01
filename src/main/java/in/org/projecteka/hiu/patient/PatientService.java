@@ -7,7 +7,6 @@ import in.org.projecteka.hiu.HiuProperties;
 import in.org.projecteka.hiu.clients.AbhaAddressServiceClient;
 import in.org.projecteka.hiu.clients.GatewayServiceClient;
 import in.org.projecteka.hiu.clients.Patient;
-import in.org.projecteka.hiu.clients.PatientSearchThrowable;
 import in.org.projecteka.hiu.common.DelayTimeoutException;
 import in.org.projecteka.hiu.common.GatewayResponse;
 import in.org.projecteka.hiu.common.Utils;
@@ -18,6 +17,7 @@ import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -82,29 +82,57 @@ public class PatientService {
     }
 
     public Mono<Patient> findPatientWith(String id) {
-        String patientUuid = null;
-        if (StringUtils.hasText(id) && openMrsProperties.isLocalisedSearch()) {
-            if (!isInitialized) {
-                initBahmniWebClient();
-            }
-            JsonNode response = bahmniWebClient.get()
+        return validatePatientInBahmni(id).then(findPatientFromCm(id));
+    }
+
+    private Mono<Void> validatePatientInBahmni(String id) {
+        if (!StringUtils.hasText(id) || !openMrsProperties.isLocalisedSearch()) {
+            return Mono.empty();
+        }
+        if (!isInitialized) {
+            initBahmniWebClient();
+        }
+        if (bahmniWebClient == null) {
+            return Mono.error(ClientError.networkServiceCallFailed());
+        }
+        return bahmniWebClient.get()
                 .uri(PATH_PATIENT_SEARCH_WITHIN_CUSTOMER + id)
                 .retrieve()
-                .bodyToMono(JsonNode.class).block();
-            if (response != null) {
-                JsonNode results = response.path("results");
-                if (results!=null && results.isArray() && results.size() > 0) {
-                    JsonNode patient = results.get(0);
-                    if (patient!=null && patient.has("uuid")) {
-                        patientUuid = patient.get("uuid").asText();
-                    }
-                }
-            }
-            if (!StringUtils.hasText(patientUuid)) {
-                logger.info("No patient details found for identifier: {} in Bahmni!", id);
-                return error(PatientSearchThrowable.notFound("No patient details found for identifier " + id + " in Bahmni!"));
-            }
+                .bodyToMono(JsonNode.class)
+                .flatMap(response -> hasBahmniPatient(response)
+                        ? Mono.<Void>empty()
+                        : patientNotFoundInBahmni(id))
+                .switchIfEmpty(patientNotFoundInBahmni(id))
+                .onErrorResume(ClientError.class, Mono::error)
+                .onErrorResume(WebClientResponseException.class, e -> {
+                    logger.error("Bahmni patient search failed for identifier: {} - {}", id, e.getMessage());
+                    return Mono.error(ClientError.networkServiceCallFailed());
+                })
+                .onErrorResume(e -> {
+                    logger.error("Bahmni patient search failed for identifier: {} - {}", id, e.getMessage());
+                    return Mono.error(ClientError.networkServiceCallFailed());
+                });
+    }
+
+    private Mono<Void> patientNotFoundInBahmni(String id) {
+        logger.info("No patient details found for identifier: {} in Bahmni!", id);
+        return Mono.error(ClientError.patientNotFound(
+                "No patient details found for identifier " + id + " in Bahmni!"));
+    }
+
+    private boolean hasBahmniPatient(JsonNode response) {
+        if (response == null) {
+            return false;
         }
+        JsonNode results = response.path("results");
+        if (results==null || !results.isArray() || results.isEmpty()) {
+            return false;
+        }
+        JsonNode patient = results.get(0);
+        return patient != null && patient.has("uuid") && StringUtils.hasText(patient.get("uuid").asText());
+    }
+
+    private Mono<Patient> findPatientFromCm(String id) {
         return getFromCache(id, () ->
         {
             logger.info("about to get patient details from CM for: {}", id);
@@ -114,8 +142,7 @@ public class PatientService {
                     .timeout(ofMillis(gatewayProperties.getRequestTimeout()))
                     .responseFrom(this::apply)
                     .onErrorResume(DelayTimeoutException.class, discard -> error(gatewayTimeOut()))
-                    .onErrorResume(TimeoutException.class, discard -> error(gatewayTimeOut()))
-                    .onErrorResume(PatientSearchThrowable.class, discard -> error(discard));
+                    .onErrorResume(TimeoutException.class, discard -> error(gatewayTimeOut()));
         });
     }
 
