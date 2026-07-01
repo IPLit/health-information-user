@@ -75,8 +75,7 @@ public class PatientService {
                 .onErrorResume(error -> error instanceof ClientError &&
                                 ((ClientError) error).getError().getError().getCode() == PATIENT_NOT_FOUND,
                         error -> {
-                            logger.error("Consent request created for unknown user.");
-                            logger.error(error.getMessage(), error);
+                            logger.warn("Consent request created for unknown user: {}", error.getMessage());
                             return empty();
                         });
     }
@@ -109,7 +108,6 @@ public class PatientService {
     }
 
     private Mono<Void> patientNotFoundInBahmni(String id) {
-        logger.info("No patient details found for identifier: {} in Bahmni!", id);
         return Mono.error(ClientError.patientNotFound(
                 "No patient details found for identifier " + id + " in Bahmni!"));
     }
