@@ -321,13 +321,16 @@ public class HiuConfiguration {
                                          HiuProperties hiuProperties,
                                          GatewayProperties gatewayProperties,
                                          PatientConsentService patientConsentService,
-                                         AbhaAddressServiceClient abhaAddressServiceClient) {
+                                         AbhaAddressServiceClient abhaAddressServiceClient,
+                                         OpenMrsProperties openMrsProperties) {
         return new PatientService(
                 gatewayServiceClient,
                 cache,
                 hiuProperties,
                 gatewayProperties,
-                patientConsentService, abhaAddressServiceClient);
+                patientConsentService,
+                abhaAddressServiceClient,
+                openMrsProperties);
     }
 
     @Bean

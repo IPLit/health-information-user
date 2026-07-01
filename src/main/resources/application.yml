@@ -66,6 +66,7 @@ hiu:
     baseUrl: ${OPENMRS_BASE_URL}
     username: ${OPENMRS_USERNAME}
     password: ${OPENMRS_PASSWORD}
+    localisedSearch: ${LOCALISED_SEARCH:false}
   #Valid values are guava(for local), redis
   cache-method: ${CACHE_METHOD:guava}
   redis:

@@ -16,4 +16,6 @@ public class OpenMrsProperties {
     private String baseUrl;
     private String username;
     private String password;
+
+    private boolean localisedSearch;
 }

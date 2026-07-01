@@ -1,6 +1,7 @@
 package in.org.projecteka.hiu.patient;
 
 import in.org.projecteka.hiu.ClientError;
+import in.org.projecteka.hiu.OpenMrsProperties;
 import in.org.projecteka.hiu.GatewayProperties;
 import in.org.projecteka.hiu.HiuProperties;
 import in.org.projecteka.hiu.clients.AbhaAddressServiceClient;
@@ -15,6 +16,11 @@ import in.org.projecteka.hiu.consent.PatientConsentService;
 import in.org.projecteka.hiu.patient.model.*;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
+import org.springframework.util.StringUtils;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -41,8 +47,23 @@ public class PatientService {
     private final HiuProperties hiuProperties;
     private final GatewayProperties gatewayProperties;
     private final PatientConsentService patientConsentService;
-
     private final AbhaAddressServiceClient abhaAddressServiceClient;
+    private final OpenMrsProperties openMrsProperties;
+
+    private static boolean isInitialized = false;
+    private static WebClient bahmniWebClient = null;
+    private static final String PATH_PATIENT_SEARCH_WITHIN_CUSTOMER = "/ws/rest/v1/bahmnicore/distro/patientSearchWithinCustomer?patientAttributes=phoneNumber&patientSearchResultsConfig=phoneNumber&s=byIdOrName&startIndex=0&identifier=";
+
+    public void initBahmniWebClient() {
+        if (StringUtils.hasText(openMrsProperties.getBaseUrl())) {
+            bahmniWebClient = WebClient.builder().baseUrl(openMrsProperties.getBaseUrl())
+            .defaultHeaders(headers -> headers.setBasicAuth(
+                openMrsProperties.getUsername(), openMrsProperties.getPassword()))
+            .build();
+            isInitialized = true;
+        }
+    }
+
 
     private Mono<Patient> apply(AbhaAddressSearchResponse response) {
         Patient patient = response.toPatient();
@@ -61,6 +82,29 @@ public class PatientService {
     }
 
     public Mono<Patient> findPatientWith(String id) {
+        String patientUuid = null;
+        if (StringUtils.hasText(id) && openMrsProperties.isLocalisedSearch()) {
+            if (!isInitialized) {
+                initBahmniWebClient();
+            }
+            JsonNode response = bahmniWebClient.get()
+                .uri(PATH_PATIENT_SEARCH_WITHIN_CUSTOMER + id)
+                .retrieve()
+                .bodyToMono(JsonNode.class).block();
+            if (response != null) {
+                JsonNode results = response.path("results");
+                if (results!=null && results.isArray() && results.size() > 0) {
+                    JsonNode patient = results.get(0);
+                    if (patient!=null && patient.has("uuid")) {
+                        patientUuid = patient.get("uuid").asText();
+                    }
+                }
+            }
+            if (!StringUtils.hasText(patientUuid)) {
+                logger.info("No patient details found for identifier: {} in Bahmni!", id);
+                return error(PatientSearchThrowable.notFound("No patient details found for identifier " + id + " in Bahmni!"));
+            }
+        }
         return getFromCache(id, () ->
         {
             logger.info("about to get patient details from CM for: {}", id);

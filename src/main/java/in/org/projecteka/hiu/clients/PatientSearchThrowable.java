@@ -17,8 +17,11 @@ public class PatientSearchThrowable extends Throwable {
     String message;
 
     static PatientSearchThrowable notFound() {
-        final String userDoesNotExist = "User does not exist";
-        return new PatientSearchThrowable(ErrorCode.NOTFOUND, userDoesNotExist);
+        return notFound("User does not exist");
+    }
+
+    public static PatientSearchThrowable notFound(String message) {
+        return new PatientSearchThrowable(ErrorCode.NOTFOUND, message);
     }
 
     static PatientSearchThrowable unknown() {

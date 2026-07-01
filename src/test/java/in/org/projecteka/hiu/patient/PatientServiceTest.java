@@ -3,6 +3,7 @@ package in.org.projecteka.hiu.patient;
 import in.org.projecteka.hiu.ClientError;
 import in.org.projecteka.hiu.GatewayProperties;
 import in.org.projecteka.hiu.HiuProperties;
+import in.org.projecteka.hiu.OpenMrsProperties;
 import in.org.projecteka.hiu.clients.AbhaAddressServiceClient;
 import in.org.projecteka.hiu.clients.GatewayServiceClient;
 import in.org.projecteka.hiu.clients.Patient;
@@ -53,6 +54,9 @@ class PatientServiceTest {
     @Mock
     AbhaAddressServiceClient abhaAddressServiceClient;
 
+    @Mock
+    OpenMrsProperties openMrsProperties;
+
     @BeforeEach
     void init() {
         initMocks(this);
@@ -70,7 +74,8 @@ class PatientServiceTest {
                 hiuProperties,
                 gatewayProperties,
                 patientConsentService,
-                abhaAddressServiceClient);
+                abhaAddressServiceClient,
+                openMrsProperties);
 
         Mono<Patient> patientPublisher = patientService.findPatientWith(patientId);
 
@@ -93,7 +98,8 @@ class PatientServiceTest {
                 hiuProperties,
                 gatewayProperties,
                 patientConsentService,
-                abhaAddressServiceClient);
+                abhaAddressServiceClient,
+                openMrsProperties);
 
         StepVerifier.create(patientService.findPatientWith(patientId))
                 .expectErrorMatches(error -> ((ClientError) error)
@@ -117,7 +123,8 @@ class PatientServiceTest {
                 hiuProperties,
                 gatewayProperties,
                 patientConsentService,
-                abhaAddressServiceClient);
+                abhaAddressServiceClient,
+                openMrsProperties);
 
         Mono<Patient> publisher = patientService.findPatientWith(id);
 

@@ -34,3 +34,7 @@ data:
   RABBITMQ_USERNAME: "{{ .Values.config.RABBITMQ_USERNAME }}"
   RABBITMQ_PASSWORD: "{{ .Values.config.RABBITMQ_PASSWORD }}"
   ABHA_ADDRESS_BASE_URL: "{{ .Values.config.ABHA_ADDRESS_BASE_URL }}"
+  LOCALISED_SEARCH: "{{ .Values.config.LOCALISED_SEARCH }}"
+  OPENMRS_BASE_URL: "{{ .Values.config.OPENMRS_BASE_URL }}"
+  OPENMRS_USERNAME: "{{ .Values.config.OPENMRS_USERNAME }}"
+  OPENMRS_PASSWORD: "{{ .Values.config.OPENMRS_PASSWORD }}"

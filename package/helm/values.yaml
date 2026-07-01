@@ -48,6 +48,10 @@ config:
   RABBITMQ_USERNAME: "bahmni"
   RABBITMQ_PASSWORD: "bahmni"
   ABHA_ADDRESS_BASE_URL: "https://abhasbx.abdm.gov.in/abha/api/v3/phr/web"
+  LOCALISED_SEARCH: false
+  OPENMRS_BASE_URL: "https://localhost/openmrs"
+  OPENMRS_USERNAME: "admin"
+  OPENMRS_PASSWORD: "welcome"
 
 secrets:
   HIU_CLIENT_ID: ""
